@@ -16,32 +16,8 @@ struct MainAppView: View {
         Group {
             if authViewModel.userSession != nil {
                 // User is logged in - show main app
-                TabView {
-                    Text("Ana Sayfa")
-                        .tabItem {
-                            Image(systemName: "house")
-                            Text("Ana Sayfa")
-                        }
-                    
-                    Text("Projeler")
-                        .tabItem {
-                            Image(systemName: "folder")
-                            Text("Projeler")
-                        }
-                    
-                    Text("Görevler")
-                        .tabItem {
-                            Image(systemName: "list.clipboard")
-                            Text("Görevler")
-                        }
-                    
-                    ProfileView()
-                        .tabItem {
-                            Image(systemName: "person")
-                            Text("Profil")
-                        }
-                }
-                .environmentObject(authViewModel)
+                CustomTabView()
+                    .environmentObject(authViewModel)
             } else {
                 // User is not logged in - show login
                 EnhancedLoginView()

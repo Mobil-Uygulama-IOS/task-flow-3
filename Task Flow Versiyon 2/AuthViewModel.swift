@@ -23,8 +23,15 @@ final class AuthViewModel: ObservableObject {
     
     // MARK: - Mock Auth State
     private func setupMockAuthState() {
-        // Simulate no user logged in initially
-        userSession = nil
+        // Test için otomatik giriş - istediğinizde kapatabilirsiniz
+        // userSession = nil // Bu satırı uncomment edip alt satırı comment edin
+        
+        // Otomatik mock giriş
+        userSession = MockUser(
+            uid: "test-user-123",
+            email: "test@example.com",
+            displayName: "Test Kullanıcı"
+        )
     }
     
     // MARK: - Sign In (Mock Implementation)

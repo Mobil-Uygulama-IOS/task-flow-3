@@ -82,7 +82,7 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
 
 ## 📞 İletişim
 
-- Geliştirici: [Doğa]
+- Geliştirici: [Doğa], [Bilgehan]
 - E-posta: [your-email@example.com]
 - Proje Linki: [https://github.com/[ORGANIZATION_NAME]/taskflow-ios](https://github.com/[ORGANIZATION_NAME]/taskflow-ios)
 

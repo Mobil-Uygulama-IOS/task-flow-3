@@ -1,5 +1,48 @@
 import Foundation
 
+// MARK: - Task Assignee
+struct TaskAssignee: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var avatarName: String
+    var email: String
+    
+    init(id: UUID = UUID(), name: String, avatarName: String, email: String) {
+        self.id = id
+        self.name = name
+        self.avatarName = avatarName
+        self.email = email
+    }
+}
+
+// MARK: - Task Comment
+struct TaskComment: Identifiable, Codable {
+    var id = UUID()
+    var author: TaskAssignee
+    var content: String
+    var createdDate: Date
+    
+    init(id: UUID = UUID(), author: TaskAssignee, content: String, createdDate: Date) {
+        self.id = id
+        self.author = author
+        self.content = content
+        self.createdDate = createdDate
+    }
+    
+    var dateString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: createdDate)
+    }
+}
+
+// MARK: - Task Priority
+enum TaskPriority: String, Codable {
+    case low = "Düşük"
+    case medium = "Orta"
+    case high = "Yüksek"
+}
+
 // MARK: - Task Model
 struct Task: Identifiable, Codable {
     var id = UUID()
@@ -13,7 +56,8 @@ struct Task: Identifiable, Codable {
     var priority: TaskPriority
     var createdDate: Date
     
-    init(title: String, description: String, assignee: TaskAssignee? = nil, dueDate: Date? = nil, comments: [TaskComment] = [], projectId: UUID? = nil, isCompleted: Bool = false, priority: TaskPriority = .medium) {
+    init(id: UUID = UUID(), title: String, description: String, assignee: TaskAssignee? = nil, dueDate: Date? = nil, comments: [TaskComment] = [], projectId: UUID? = nil, isCompleted: Bool = false, priority: TaskPriority = .medium, createdDate: Date = Date()) {
+        self.id = id
         self.title = title
         self.description = description
         self.assignee = assignee
@@ -22,7 +66,7 @@ struct Task: Identifiable, Codable {
         self.projectId = projectId
         self.isCompleted = isCompleted
         self.priority = priority
-        self.createdDate = Date()
+        self.createdDate = createdDate
     }
     
     var dueDateString: String {
@@ -33,61 +77,34 @@ struct Task: Identifiable, Codable {
     }
 }
 
-// MARK: - Task Priority
-enum TaskPriority: String, Codable {
-    case low = "Düşük"
-    case medium = "Orta"
-    case high = "Yüksek"
-}
-
-// MARK: - Task Assignee
-struct TaskAssignee: Identifiable, Codable {
-    var id = UUID()
-    var name: String
-    var avatarName: String
-    var email: String
-}
-
-// MARK: - Task Comment
-struct TaskComment: Identifiable, Codable {
-    var id = UUID()
-    var author: TaskAssignee
-    var content: String
-    var createdDate: Date
-    
-    var dateString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: createdDate)
-    }
-}
-
 // MARK: - Sample Data
 extension Task {
-    static let sampleAssignees = [
+    static let sampleAssignees: [TaskAssignee] = [
         TaskAssignee(name: "Emily Carter", avatarName: "person.circle.fill", email: "emily@example.com"),
         TaskAssignee(name: "David Lee", avatarName: "person.circle.fill", email: "david@example.com"),
         TaskAssignee(name: "Sarah Johnson", avatarName: "person.circle.fill", email: "sarah@example.com")
     ]
     
-    static let sampleTask = Task(
-        title: "UI/UX Design for Mobile App",
-        description: "Create a modern and user-friendly interface for the new student project tracking application.",
-        assignee: sampleAssignees[0],
-        dueDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 20)),
-        comments: [
-            TaskComment(
-                author: sampleAssignees[0],
-                content: "Initial project scope and objectives defined.",
-                createdDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 10)) ?? Date()
-            ),
-            TaskComment(
-                author: sampleAssignees[1],
-                content: "Resources and tools required for the project identified.",
-                createdDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 12)) ?? Date()
-            )
-        ],
-        isCompleted: false,
-        priority: .high
-    )
+    static var sampleTask: Task {
+        Task(
+            title: "UI/UX Design for Mobile App",
+            description: "Create a modern and user-friendly interface for the new student project tracking application.",
+            assignee: sampleAssignees[0],
+            dueDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 20)),
+            comments: [
+                TaskComment(
+                    author: sampleAssignees[0],
+                    content: "Initial project scope and objectives defined.",
+                    createdDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 10)) ?? Date()
+                ),
+                TaskComment(
+                    author: sampleAssignees[1],
+                    content: "Resources and tools required for the project identified.",
+                    createdDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 12)) ?? Date()
+                )
+            ],
+            isCompleted: false,
+            priority: .high
+        )
+    }
 }

@@ -43,8 +43,8 @@ enum TaskPriority: String, Codable {
     case high = "Yüksek"
 }
 
-// MARK: - Task Model
-struct Task: Identifiable, Codable {
+// MARK: - ProjectTask Model
+struct ProjectTask: Identifiable, Codable {
     var id = UUID()
     var title: String
     var description: String
@@ -78,15 +78,15 @@ struct Task: Identifiable, Codable {
 }
 
 // MARK: - Sample Data
-extension Task {
+extension ProjectTask {
     static let sampleAssignees: [TaskAssignee] = [
         TaskAssignee(name: "Emily Carter", avatarName: "person.circle.fill", email: "emily@example.com"),
         TaskAssignee(name: "David Lee", avatarName: "person.circle.fill", email: "david@example.com"),
         TaskAssignee(name: "Sarah Johnson", avatarName: "person.circle.fill", email: "sarah@example.com")
     ]
     
-    static var sampleTask: Task {
-        Task(
+    static var sampleTask: ProjectTask {
+        ProjectTask(
             title: "UI/UX Design for Mobile App",
             description: "Create a modern and user-friendly interface for the new student project tracking application.",
             assignee: sampleAssignees[0],

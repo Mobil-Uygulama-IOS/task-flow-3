@@ -2,11 +2,11 @@ import SwiftUI
 
 struct TaskDetailView: View {
     @Environment(\.presentationMode) var presentationMode
-    @State private var task: Task
+    @State private var task: ProjectTask
     @State private var newComment: String = ""
     @FocusState private var isCommentFieldFocused: Bool
     
-    init(task: Task = Task.sampleTask) {
+    init(task: ProjectTask = ProjectTask.sampleTask) {
         _task = State(initialValue: task)
     }
     
@@ -199,7 +199,7 @@ struct TaskDetailView: View {
         guard !newComment.isEmpty else { return }
         
         let comment = TaskComment(
-            author: task.assignee ?? Task.sampleAssignees[0],
+            author: task.assignee ?? ProjectTask.sampleAssignees[0],
             content: newComment,
             createdDate: Date()
         )

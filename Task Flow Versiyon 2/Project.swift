@@ -17,9 +17,9 @@ struct Project: Identifiable, Codable {
     var createdDate: Date
     var status: ProjectStatus
     var dueDate: Date?
-    var tasks: [Task]
+    var tasks: [ProjectTask]
     
-    init(id: UUID = UUID(), title: String, description: String, iconName: String = "folder.fill", iconColor: String = "blue", status: ProjectStatus = .todo, dueDate: Date? = nil, tasks: [Task] = [], createdDate: Date = Date()) {
+    init(id: UUID = UUID(), title: String, description: String, iconName: String = "folder.fill", iconColor: String = "blue", status: ProjectStatus = .todo, dueDate: Date? = nil, tasks: [ProjectTask] = [], createdDate: Date = Date()) {
         self.id = id
         self.title = title
         self.description = description
@@ -60,7 +60,7 @@ struct Project: Identifiable, Codable {
 // MARK: - Sample Data
 extension Project {
     static var sampleProjects: [Project] {
-        let assignees = Task.sampleAssignees
+        let assignees = ProjectTask.sampleAssignees
         
         return [
             // Yapılacaklar
@@ -72,7 +72,7 @@ extension Project {
                 status: .todo,
                 dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 20)),
                 tasks: [
-                    Task(
+                    ProjectTask(
                         title: "UI/UX Design for Mobile App",
                         description: "Create a modern and user-friendly interface for the new student project tracking application.",
                         assignee: assignees[0],
@@ -106,14 +106,14 @@ extension Project {
                 status: .inProgress,
                 dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 25)),
                 tasks: [
-                    Task(
+                    ProjectTask(
                         title: "Backend API Development",
                         description: "Develop REST API for mobile application",
                         assignee: assignees[1],
                         dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 15)),
                         isCompleted: true
                     ),
-                    Task(
+                    ProjectTask(
                         title: "Database Design",
                         description: "Design and implement database schema",
                         assignee: assignees[1],
@@ -131,7 +131,7 @@ extension Project {
                 status: .completed,
                 dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 30)),
                 tasks: [
-                    Task(
+                    ProjectTask(
                         title: "Market Research",
                         description: "Complete market research analysis",
                         assignee: assignees[2],

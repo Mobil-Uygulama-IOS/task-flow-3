@@ -3,7 +3,7 @@ import SwiftUI
 struct ProjectDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     let project: Project
-    @State private var selectedTask: Task?
+    @State private var selectedTask: ProjectTask?
     @State private var showTaskDetail = false
     
     var body: some View {
@@ -153,7 +153,7 @@ struct ProjectDetailView: View {
 
 // MARK: - Task Row Card
 struct TaskRowCard: View {
-    let task: Task
+    let task: ProjectTask
     
     var body: some View {
         HStack(spacing: 16) {

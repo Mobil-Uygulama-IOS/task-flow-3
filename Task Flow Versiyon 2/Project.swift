@@ -17,10 +17,9 @@ struct Project: Identifiable, Codable {
     let createdDate: Date
     var status: ProjectStatus
     let dueDate: Date?
-    let tasksCount: Int
-    let completedTasksCount: Int
+    var tasks: [Task]
     
-    init(title: String, description: String, iconName: String = "folder.fill", iconColor: String = "blue", status: ProjectStatus = .todo, dueDate: Date? = nil, tasksCount: Int = 0, completedTasksCount: Int = 0) {
+    init(title: String, description: String, iconName: String = "folder.fill", iconColor: String = "blue", status: ProjectStatus = .todo, dueDate: Date? = nil, tasks: [Task] = []) {
         self.title = title
         self.description = description
         self.iconName = iconName
@@ -28,8 +27,15 @@ struct Project: Identifiable, Codable {
         self.createdDate = Date()
         self.status = status
         self.dueDate = dueDate
-        self.tasksCount = tasksCount
-        self.completedTasksCount = completedTasksCount
+        self.tasks = tasks
+    }
+    
+    var tasksCount: Int {
+        tasks.count
+    }
+    
+    var completedTasksCount: Int {
+        tasks.filter { $0.isCompleted }.count
     }
     
     var progressPercentage: Double {
@@ -60,7 +66,22 @@ extension Project {
             iconName: "list.bullet",
             iconColor: "blue",
             status: .todo,
-            dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 20))
+            dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 20)),
+            tasks: [
+                Task(
+                    title: "UI/UX Design for Mobile App",
+                    description: "Create a modern and user-friendly interface for the new student project tracking application.",
+                    assignee: Task.sampleAssignees[0],
+                    dueDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 20)),
+                    comments: [
+                        TaskComment(
+                            author: Task.sampleAssignees[0],
+                            content: "Initial project scope and objectives defined.",
+                            createdDate: Calendar.current.date(from: DateComponents(year: 2024, month: 7, day: 10)) ?? Date()
+                        )
+                    ]
+                )
+            ]
         ),
         Project(
             title: "Proje 4: Blog Platformu",
@@ -68,7 +89,8 @@ extension Project {
             iconName: "list.bullet",
             iconColor: "blue",
             status: .todo,
-            dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 5))
+            dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 5)),
+            tasks: []
         ),
         
         // Devam Ediyor
@@ -79,8 +101,21 @@ extension Project {
             iconColor: "blue",
             status: .inProgress,
             dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 25)),
-            tasksCount: 12,
-            completedTasksCount: 7
+            tasks: [
+                Task(
+                    title: "Backend API Development",
+                    description: "Develop REST API for mobile application",
+                    assignee: Task.sampleAssignees[1],
+                    dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 15)),
+                    isCompleted: true
+                ),
+                Task(
+                    title: "Database Design",
+                    description: "Design and implement database schema",
+                    assignee: Task.sampleAssignees[1],
+                    dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 20))
+                )
+            ]
         ),
         
         // Tamamlandı
@@ -91,8 +126,15 @@ extension Project {
             iconColor: "blue",
             status: .completed,
             dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 30)),
-            tasksCount: 8,
-            completedTasksCount: 8
+            tasks: [
+                Task(
+                    title: "Market Research",
+                    description: "Complete market research analysis",
+                    assignee: Task.sampleAssignees[2],
+                    dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 10)),
+                    isCompleted: true
+                )
+            ]
         )
     ]
 }

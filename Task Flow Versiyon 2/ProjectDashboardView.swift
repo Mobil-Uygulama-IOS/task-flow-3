@@ -3,6 +3,8 @@ import SwiftUI
 struct ProjectDashboardView: View {
     @State private var selectedTab: ProjectStatus = .todo
     @State private var projects = Project.sampleProjects
+    @State private var selectedProject: Project?
+    @State private var showProjectDetail = false
     
     var filteredProjects: [Project] {
         projects.filter { $0.status == selectedTab }
@@ -75,7 +77,8 @@ struct ProjectDashboardView: View {
                             ForEach(filteredProjects) { project in
                                 ProjectDashboardCard(project: project)
                                     .onTapGesture {
-                                        // Navigate to project detail
+                                        selectedProject = project
+                                        showProjectDetail = true
                                     }
                             }
                         }
@@ -88,6 +91,11 @@ struct ProjectDashboardView: View {
                 }
             }
             .navigationBarHidden(true)
+            .sheet(isPresented: $showProjectDetail) {
+                if let project = selectedProject {
+                    ProjectDetailView(project: project)
+                }
+            }
         }
     }
 }

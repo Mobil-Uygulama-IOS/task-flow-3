@@ -5,6 +5,7 @@ struct ProjectDetailView: View {
     let project: Project
     @State private var selectedTask: ProjectTask?
     @State private var showTaskDetail = false
+    @State private var showAnalytics = false
     
     var body: some View {
         ZStack {
@@ -32,10 +33,14 @@ struct ProjectDetailView: View {
                     
                     Spacer()
                     
-                    // Invisible button for balance
-                    Image(systemName: "arrow.left")
-                        .font(.title3)
-                        .opacity(0)
+                    // Analytics button
+                    Button(action: {
+                        showAnalytics = true
+                    }) {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.title3)
+                            .foregroundColor(.white)
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -147,6 +152,9 @@ struct ProjectDetailView: View {
             if let task = selectedTask {
                 TaskDetailView(task: task)
             }
+        }
+        .sheet(isPresented: $showAnalytics) {
+            ProjectAnalyticsView(project: project)
         }
     }
 }

@@ -14,13 +14,13 @@ struct CustomTabView: View {
                 Group {
                     switch selectedTab {
                     case 0:
-                        ProjectListView()
+                        ProjectDashboardView()
                     case 1:
                         NotificationsView()
                     case 2:
                         SettingsView()
                     default:
-                        ProjectListView()
+                        ProjectDashboardView()
                     }
                 }
                 

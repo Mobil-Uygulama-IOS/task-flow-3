@@ -2,29 +2,32 @@ import SwiftUI
 
 struct CustomTabView: View {
     @State private var selectedTab = 0
+    @StateObject private var themeManager = ThemeManager.shared
     
     var body: some View {
         ZStack {
-            // Background
-            Color(.systemGray6)
+            // Background - Tema desteği
+            themeManager.backgroundColor
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Main content based on selected tab
-                Group {
-                    switch selectedTab {
-                    case 0:
-                        ProjectDashboardView()
-                    case 1:
-                        NotificationsView()
-                    case 2:
-                        SettingsView()
-                    default:
-                        ProjectDashboardView()
-                    }
+            // Main content based on selected tab
+            Group {
+                switch selectedTab {
+                case 0:
+                    ProjectListView()
+                        .environmentObject(themeManager)
+                case 1:
+                    NotificationsView()
+                        .environmentObject(themeManager)
+                case 2:
+                    SettingsView()
+                        .environmentObject(themeManager)
+                default:
+                    ProjectListView()
+                        .environmentObject(themeManager)
                 }
-                
-                // Custom Tab Bar
+            }                // Custom Tab Bar
                 HStack {
                     // Projeler tab
                     TabBarItem(
@@ -34,6 +37,7 @@ struct CustomTabView: View {
                     ) {
                         selectedTab = 0
                     }
+                    .environmentObject(themeManager)
                     
                     Spacer()
                     
@@ -45,6 +49,7 @@ struct CustomTabView: View {
                     ) {
                         selectedTab = 1
                     }
+                    .environmentObject(themeManager)
                     
                     Spacer()
                     
@@ -56,14 +61,15 @@ struct CustomTabView: View {
                     ) {
                         selectedTab = 2
                     }
+                    .environmentObject(themeManager)
                 }
                 .padding(.horizontal, 40)
                 .padding(.vertical, 16)
-                .background(Color(.systemBackground))
+                .background(themeManager.cardBackground)
                 .overlay(
                     Rectangle()
                         .frame(height: 0.5)
-                        .foregroundColor(Color(.separator)),
+                        .foregroundColor(Color.gray.opacity(0.3)),
                     alignment: .top
                 )
             }
@@ -72,6 +78,7 @@ struct CustomTabView: View {
 }
 
 struct TabBarItem: View {
+    @EnvironmentObject var themeManager: ThemeManager
     let icon: String
     let title: String
     let isSelected: Bool
@@ -82,11 +89,11 @@ struct TabBarItem: View {
             VStack(spacing: 4) {
                 Image(systemName: icon)
                     .font(.title3)
-                    .foregroundColor(isSelected ? .blue : .gray)
+                    .foregroundColor(isSelected ? .blue : themeManager.secondaryTextColor)
                 
                 Text(title)
                     .font(.caption)
-                    .foregroundColor(isSelected ? .blue : .gray)
+                    .foregroundColor(isSelected ? .blue : themeManager.secondaryTextColor)
             }
         }
         .buttonStyle(PlainButtonStyle())
@@ -95,6 +102,8 @@ struct TabBarItem: View {
 
 // MARK: - Temporary Views
 struct NotificationsView: View {
+    @StateObject private var themeManager = ThemeManager.shared
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -106,15 +115,18 @@ struct NotificationsView: View {
                 Text("Bildirimler")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .foregroundColor(themeManager.textColor)
                 
                 Text("Henüz bildiriminiz bulunmuyor.")
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .padding()
                 
                 Spacer()
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(themeManager.backgroundColor)
             .navigationTitle("Bildirimler")
             .navigationBarHidden(true)
         }
@@ -123,6 +135,7 @@ struct NotificationsView: View {
 
 struct SettingsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @StateObject private var themeManager = ThemeManager.shared
     
     var body: some View {
         NavigationView {
@@ -132,7 +145,7 @@ struct SettingsView: View {
                     Text("Ayarlar")
                         .font(.largeTitle)
                         .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(themeManager.textColor)
                     
                     Spacer()
                 }
@@ -149,6 +162,7 @@ struct SettingsView: View {
                                 Text("Profil Bilgileri")
                                     .font(.headline)
                                     .fontWeight(.semibold)
+                                    .foregroundColor(themeManager.textColor)
                                     .padding(.horizontal, 20)
                                 
                                 HStack(spacing: 16) {
@@ -165,11 +179,11 @@ struct SettingsView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(user.displayName ?? "Kullanıcı")
                                             .font(.headline)
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(themeManager.textColor)
                                         
                                         Text(user.email ?? "")
                                             .font(.subheadline)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(.gray)
                                     }
                                     
                                     Spacer()
@@ -179,7 +193,7 @@ struct SettingsView: View {
                                         .foregroundColor(.gray)
                                 }
                                 .padding(16)
-                                .background(Color(.systemBackground))
+                                .background(themeManager.cardBackground)
                                 .cornerRadius(12)
                                 .padding(.horizontal, 20)
                             }
@@ -190,16 +204,25 @@ struct SettingsView: View {
                             Text("Uygulama Ayarları")
                                 .font(.headline)
                                 .fontWeight(.semibold)
+                                .foregroundColor(themeManager.textColor)
                                 .padding(.horizontal, 20)
                             
                             VStack(spacing: 1) {
                                 SettingsRow(icon: "bell", title: "Bildirimler", color: .orange)
-                                SettingsRow(icon: "moon", title: "Koyu Tema", color: .purple)
+                                
+                                // Koyu Tema Toggle
+                                SettingsToggleRow(
+                                    icon: "moon.fill",
+                                    title: "Koyu Tema",
+                                    color: .purple,
+                                    isOn: $themeManager.isDarkMode
+                                )
+                                
                                 SettingsRow(icon: "globe", title: "Dil Ayarları", color: .blue)
                                 SettingsRow(icon: "questionmark.circle", title: "Yardım", color: .green)
                                 SettingsRow(icon: "info.circle", title: "Hakkında", color: .gray)
                             }
-                            .background(Color(.systemBackground))
+                            .background(themeManager.cardBackground)
                             .cornerRadius(12)
                             .padding(.horizontal, 20)
                         }
@@ -221,7 +244,7 @@ struct SettingsView: View {
                                     Spacer()
                                 }
                                 .padding(16)
-                                .background(Color(.systemBackground))
+                                .background(themeManager.cardBackground)
                                 .cornerRadius(12)
                             }
                             .padding(.horizontal, 20)
@@ -232,7 +255,7 @@ struct SettingsView: View {
                 
                 Spacer()
             }
-            .background(Color(.systemGray6))
+            .background(themeManager.backgroundColor)
         }
         .navigationBarHidden(true)
     }
@@ -242,6 +265,7 @@ struct SettingsRow: View {
     let icon: String
     let title: String
     let color: Color
+    @StateObject private var themeManager = ThemeManager.shared
     
     var body: some View {
         Button(action: {
@@ -255,7 +279,7 @@ struct SettingsRow: View {
                 
                 Text(title)
                     .font(.body)
-                    .foregroundColor(.primary)
+                    .foregroundColor(themeManager.textColor)
                 
                 Spacer()
                 
@@ -266,6 +290,35 @@ struct SettingsRow: View {
             .padding(16)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Settings Toggle Row (Tema için)
+struct SettingsToggleRow: View {
+    let icon: String
+    let title: String
+    let color: Color
+    @Binding var isOn: Bool
+    @StateObject private var themeManager = ThemeManager.shared
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(color)
+                .frame(width: 24)
+            
+            Text(title)
+                .font(.body)
+                .foregroundColor(themeManager.textColor)
+            
+            Spacer()
+            
+            Toggle("", isOn: $isOn)
+                .labelsHidden()
+                .tint(.purple)
+        }
+        .padding(16)
     }
 }
 

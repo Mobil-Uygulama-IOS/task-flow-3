@@ -1,8 +1,8 @@
 //
 //  EnhancedLoginView.swift
-//  Task Flow Versiyon 2
+//  Raptiye
 //
-//  Created on 13 Ekim 2025.
+//  Created on 16 Ekim 2025.
 //
 
 import SwiftUI
@@ -15,6 +15,9 @@ struct EnhancedLoginView: View {
     @State private var isShowingForgotPassword = false
     @State private var email = ""
     @State private var password = ""
+    
+    // Yeşil raptiye rengi
+    let greenAccent = Color(red: 0.40, green: 0.84, blue: 0.55)
     
     var body: some View {
         GeometryReader { geometry in
@@ -34,14 +37,7 @@ struct EnhancedLoginView: View {
             }
         }
         .background(
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.1, green: 0.2, blue: 0.45),
-                    Color(red: 0.2, green: 0.3, blue: 0.6)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+            Color(red: 0.11, green: 0.13, blue: 0.16)
         )
         .ignoresSafeArea()
         .sheet(isPresented: $isShowingSignUp) {
@@ -72,21 +68,23 @@ struct EnhancedLoginView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            // App Logo/Icon
-            Circle()
-                .fill(Color.white.opacity(0.2))
-                .frame(width: 100, height: 100)
-                .overlay(
-                    Image(systemName: "list.clipboard")
-                        .font(.system(size: 40, weight: .light))
-                        .foregroundColor(.white)
-                )
-                .scaleEffect(authViewModel.isLoading ? 0.9 : 1.0)
-                .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: authViewModel.isLoading)
+            // Yeşil Raptiye İkonu
+            ZStack {
+                Circle()
+                    .fill(greenAccent.opacity(0.2))
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 50, weight: .semibold))
+                    .foregroundColor(greenAccent)
+                    .rotationEffect(.degrees(45))
+            }
+            .scaleEffect(authViewModel.isLoading ? 0.9 : 1.0)
+            .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: authViewModel.isLoading)
             
             // App Title
             VStack(spacing: 8) {
-                Text("TaskFlow")
+                Text("Raptiye")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
                 
@@ -117,7 +115,7 @@ struct EnhancedLoginView: View {
             
             // Email Field
             CustomTextField(
-                placeholder: "E-posta adresiniz",
+                placeholder: "E-posta",
                 text: $email,
                 keyboardType: .emailAddress,
                 systemImage: "envelope"
@@ -125,7 +123,7 @@ struct EnhancedLoginView: View {
             
             // Password Field
             CustomSecureField(
-                placeholder: "Şifreniz",
+                placeholder: "Şifre",
                 text: $password,
                 systemImage: "lock"
             )
@@ -133,15 +131,15 @@ struct EnhancedLoginView: View {
             // Forgot Password Button
             HStack {
                 Spacer()
-                Button("Şifremi Unuttum?") {
+                Button("Şifremi unuttum") {
                     isShowingForgotPassword = true
                 }
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(greenAccent)
             }
             .padding(.top, -8)
             
-            // Sign In Button
+            // Sign In Button - Yeşil
             Button(action: {
                 Task {
                     await signIn()
@@ -157,12 +155,12 @@ struct EnhancedLoginView: View {
                             .font(.system(size: 18, weight: .semibold))
                     }
                 }
-                .foregroundColor(Color(red: 0.1, green: 0.2, blue: 0.45))
+                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(Color.white)
+                .background(greenAccent)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
-                .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
+                .shadow(color: greenAccent.opacity(0.3), radius: 8, x: 0, y: 4)
             }
             .disabled(authViewModel.isLoading || email.isEmpty || password.isEmpty)
             .opacity(authViewModel.isLoading || email.isEmpty || password.isEmpty ? 0.6 : 1.0)
@@ -170,15 +168,15 @@ struct EnhancedLoginView: View {
             
             // Sign Up Option
             HStack(spacing: 4) {
-                Text("Hesabınız yok mu?")
+                Text("Hesabın yok mu?")
                     .font(.system(size: 16))
                     .foregroundColor(.white.opacity(0.8))
                 
-                Button("Kayıt Olun") {
+                Button("Kayıt Ol") {
                     isShowingSignUp = true
                 }
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(greenAccent)
             }
             .padding(.top, 20)
         }
@@ -210,6 +208,10 @@ struct CustomTextField: View {
                 .keyboardType(keyboardType)
                 .autocapitalization(.none)
                 .disableAutocorrection(true)
+                .placeholder(when: text.isEmpty) {
+                    Text(placeholder)
+                        .foregroundColor(.white.opacity(0.5))
+                }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
@@ -271,28 +273,22 @@ struct CustomSecureField: View {
     }
 }
 
+// MARK: - Placeholder Extension
+extension View {
+    func placeholder<Content: View>(
+        when shouldShow: Bool,
+        alignment: Alignment = .leading,
+        @ViewBuilder placeholder: () -> Content) -> some View {
+        
+        ZStack(alignment: alignment) {
+            placeholder().opacity(shouldShow ? 1 : 0)
+            self
+        }
+    }
+}
+
 // MARK: - Preview
 #Preview {
     EnhancedLoginView()
         .environmentObject(AuthViewModel())
-}
-
-// MARK: - Temporary SignUpView
-struct SignUpView: View {
-    @Environment(\.dismiss) var dismiss
-    
-    var body: some View {
-        NavigationView {
-            Text("Kayıt Ol Ekranı")
-                .navigationTitle("Kayıt Ol")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("Kapat") {
-                            dismiss()
-                        }
-                    }
-                }
-        }
-    }
 }

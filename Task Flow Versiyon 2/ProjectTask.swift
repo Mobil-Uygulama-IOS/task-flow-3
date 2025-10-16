@@ -75,6 +75,15 @@ struct ProjectTask: Identifiable, Codable {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: dueDate)
     }
+    
+    /// Formatlanmış son teslim tarihi - Android ile aynı
+    var formattedDueDate: String {
+        guard let dueDate = dueDate else { return "" }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMMM"
+        formatter.locale = Locale(identifier: "tr_TR")
+        return "Son teslim: \(formatter.string(from: dueDate))"
+    }
 }
 
 // MARK: - Sample Data

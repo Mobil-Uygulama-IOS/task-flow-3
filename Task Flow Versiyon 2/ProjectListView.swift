@@ -1,10 +1,14 @@
 import SwiftUI
 
 struct ProjectListView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     @State private var searchText = ""
     @State private var selectedSortOption = "Tarih"
     @State private var selectedFilterOption = "Tümü"
     @State private var projects = Project.sampleProjects
+    @State private var showAnalytics = false
+    @State private var showProjectBoard = false
+    @State private var selectedProject: Project?
     
     let sortOptions = ["Tarih", "İsim", "İlerleme"]
     let filterOptions = ["Tümü", "Aktif", "Tamamlanan"]
@@ -46,31 +50,58 @@ struct ProjectListView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Dark background - ekrandaki gibi koyu
-                Color(.systemBackground)
+                // Dynamic background based on theme
+                themeManager.backgroundColor
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header with title and add button
+                    // Header with title and buttons (Android style)
                     HStack {
                         Text("Projeler")
                             .font(.largeTitle)
                             .fontWeight(.bold)
-                            .foregroundColor(.primary)
+                            .foregroundColor(themeManager.textColor)
                         
                         Spacer()
                         
-                        Button(action: {
-                            // Add new project action
-                            addNewProject()
-                        }) {
-                            Image(systemName: "plus")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .frame(width: 40, height: 40)
-                                .background(Color.blue)
-                                .clipShape(Circle())
+                        HStack(spacing: 12) {
+                            // Analytics button
+                            Button(action: {
+                                selectedProject = projects.first
+                                showAnalytics = true
+                            }) {
+                                Image(systemName: "chart.bar.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white)
+                                    .frame(width: 40, height: 40)
+                                    .background(Color.orange)
+                                    .clipShape(Circle())
+                            }
+                            
+                            // Kanban Board button
+                            Button(action: {
+                                showProjectBoard = true
+                            }) {
+                                Image(systemName: "square.grid.2x2.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white)
+                                    .frame(width: 40, height: 40)
+                                    .background(Color.green)
+                                    .clipShape(Circle())
+                            }
+                            
+                            // Add new project button
+                            Button(action: {
+                                addNewProject()
+                            }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 20))
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.white)
+                                    .frame(width: 40, height: 40)
+                                    .background(Color.blue)
+                                    .clipShape(Circle())
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -79,14 +110,15 @@ struct ProjectListView: View {
                     // Search bar
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
+                            .foregroundColor(themeManager.secondaryTextColor)
                         
                         TextField("Projelerde ara", text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
+                            .foregroundColor(themeManager.textColor)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
-                    .background(Color(.systemGray5))
+                    .background(themeManager.searchBackground)
                     .cornerRadius(12)
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
@@ -113,10 +145,10 @@ struct ProjectListView: View {
                                 Image(systemName: "chevron.down")
                             }
                             .font(.subheadline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(themeManager.textColor)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(Color(.systemGray5))
+                            .background(themeManager.cardBackground)
                             .cornerRadius(8)
                         }
                         
@@ -140,10 +172,10 @@ struct ProjectListView: View {
                                 Image(systemName: "chevron.down")
                             }
                             .font(.subheadline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(themeManager.textColor)
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(Color(.systemGray5))
+                            .background(themeManager.cardBackground)
                             .cornerRadius(8)
                         }
                         
@@ -158,7 +190,7 @@ struct ProjectListView: View {
                             Text("Projelerim")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                                .foregroundColor(.primary)
+                                .foregroundColor(themeManager.textColor)
                             
                             Spacer()
                         }
@@ -170,6 +202,7 @@ struct ProjectListView: View {
                             LazyVStack(spacing: 12) {
                                 ForEach(filteredProjects) { project in
                                     ProjectCardView(project: project)
+                                        .environmentObject(themeManager)
                                         .onTapGesture {
                                             // Navigate to project detail
                                         }
@@ -182,6 +215,16 @@ struct ProjectListView: View {
             }
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showAnalytics) {
+            if let project = selectedProject {
+                ProjectAnalyticsView(project: project)
+                    .environmentObject(themeManager)
+            }
+        }
+        .sheet(isPresented: $showProjectBoard) {
+            ProjectBoardView()
+                .environmentObject(themeManager)
+        }
     }
     
     private func addNewProject() {
@@ -197,6 +240,7 @@ struct ProjectListView: View {
 
 // MARK: - Project Card View
 struct ProjectCardView: View {
+    @EnvironmentObject var themeManager: ThemeManager
     let project: Project
     
     var body: some View {
@@ -217,12 +261,12 @@ struct ProjectCardView: View {
                 Text(project.title)
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(themeManager.textColor)
                     .lineLimit(1)
                 
                 Text(project.description)
                     .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(themeManager.secondaryTextColor)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                 
@@ -244,7 +288,7 @@ struct ProjectCardView: View {
                         
                         Text("\(project.completedTasksCount)/\(project.tasksCount)")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(themeManager.secondaryTextColor)
                             .frame(minWidth: 30)
                     }
                 }
@@ -255,10 +299,10 @@ struct ProjectCardView: View {
             // Chevron
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundColor(.gray)
+                .foregroundColor(themeManager.secondaryTextColor)
         }
         .padding(16)
-        .background(Color(.systemBackground))
+        .background(themeManager.cardBackground)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
@@ -268,9 +312,13 @@ struct ProjectCardView: View {
 struct ProjectListView_Previews: PreviewProvider {
     static var previews: some View {
         ProjectListView()
+            .environmentObject(ThemeManager.shared)
             .preferredColorScheme(.light)
         
         ProjectListView()
+            .environmentObject(ThemeManager.shared)
             .preferredColorScheme(.dark)
     }
 }
+
+

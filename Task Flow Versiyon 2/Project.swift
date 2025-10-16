@@ -18,8 +18,10 @@ struct Project: Identifiable, Codable {
     var status: ProjectStatus
     var dueDate: Date?
     var tasks: [ProjectTask]
+    var teamLeader: User?
+    var teamMembers: [User]
     
-    init(id: UUID = UUID(), title: String, description: String, iconName: String = "folder.fill", iconColor: String = "blue", status: ProjectStatus = .todo, dueDate: Date? = nil, tasks: [ProjectTask] = [], createdDate: Date = Date()) {
+    init(id: UUID = UUID(), title: String, description: String, iconName: String = "folder.fill", iconColor: String = "blue", status: ProjectStatus = .todo, dueDate: Date? = nil, tasks: [ProjectTask] = [], teamLeader: User? = nil, teamMembers: [User] = [], createdDate: Date = Date()) {
         self.id = id
         self.title = title
         self.description = description
@@ -29,6 +31,8 @@ struct Project: Identifiable, Codable {
         self.status = status
         self.dueDate = dueDate
         self.tasks = tasks
+        self.teamLeader = teamLeader
+        self.teamMembers = teamMembers
     }
     
     var tasksCount: Int {
@@ -61,6 +65,7 @@ struct Project: Identifiable, Codable {
 extension Project {
     static var sampleProjects: [Project] {
         let assignees = ProjectTask.sampleAssignees
+        let users = User.sampleUsers
         
         return [
             // Yapılacaklar
@@ -85,7 +90,9 @@ extension Project {
                             )
                         ]
                     )
-                ]
+                ],
+                teamLeader: users[0],
+                teamMembers: [users[1], users[2]]
             ),
             Project(
                 title: "Proje 4: Blog Platformu",
@@ -94,7 +101,9 @@ extension Project {
                 iconColor: "blue",
                 status: .todo,
                 dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 6, day: 5)),
-                tasks: []
+                tasks: [],
+                teamLeader: users[1],
+                teamMembers: [users[0], users[3]]
             ),
             
             // Devam Ediyor
@@ -119,7 +128,9 @@ extension Project {
                         assignee: assignees[1],
                         dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 20))
                     )
-                ]
+                ],
+                teamLeader: users[2],
+                teamMembers: [users[0], users[1], users[3]]
             ),
             
             // Tamamlandı
@@ -138,7 +149,9 @@ extension Project {
                         dueDate: Calendar.current.date(from: DateComponents(year: 2025, month: 5, day: 10)),
                         isCompleted: true
                     )
-                ]
+                ],
+                teamLeader: users[3],
+                teamMembers: [users[0], users[2]]
             )
         ]
     }

@@ -3,6 +3,7 @@ import SwiftUI
 struct CustomTabView: View {
     @State private var selectedTab = 0
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var localization = LocalizationManager.shared
     
     var body: some View {
         ZStack {
@@ -32,7 +33,7 @@ struct CustomTabView: View {
                     // Projeler tab
                     TabBarItem(
                         icon: "list.clipboard.fill",
-                        title: "Projeler",
+                        title: localization.localizedString("Projects"),
                         isSelected: selectedTab == 0
                     ) {
                         selectedTab = 0
@@ -44,7 +45,7 @@ struct CustomTabView: View {
                     // Bildirimler tab
                     TabBarItem(
                         icon: "bell",
-                        title: "Bildirimler",
+                        title: localization.localizedString("Notifications"),
                         isSelected: selectedTab == 1
                     ) {
                         selectedTab = 1
@@ -56,7 +57,7 @@ struct CustomTabView: View {
                     // Ayarlar tab
                     TabBarItem(
                         icon: "gearshape",
-                        title: "Ayarlar",
+                        title: localization.localizedString("Settings"),
                         isSelected: selectedTab == 2
                     ) {
                         selectedTab = 2
@@ -103,6 +104,7 @@ struct TabBarItem: View {
 // MARK: - Temporary Views
 struct NotificationsView: View {
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var localization = LocalizationManager.shared
     
     var body: some View {
         NavigationView {
@@ -112,12 +114,12 @@ struct NotificationsView: View {
                     .foregroundColor(.gray)
                     .padding()
                 
-                Text("Bildirimler")
+                Text(localization.localizedString("Notifications"))
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(themeManager.textColor)
                 
-                Text("Henüz bildiriminiz bulunmuyor.")
+                Text(localization.localizedString("NoNotificationsMessage"))
                     .font(.subheadline)
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
@@ -127,7 +129,7 @@ struct NotificationsView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(themeManager.backgroundColor)
-            .navigationTitle("Bildirimler")
+            .navigationTitle(localization.localizedString("Notifications"))
             .navigationBarHidden(true)
         }
     }
@@ -136,13 +138,15 @@ struct NotificationsView: View {
 struct SettingsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject private var themeManager = ThemeManager.shared
+    @StateObject private var localization = LocalizationManager.shared
+    @State private var showProfileView = false
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Text("Ayarlar")
+                    Text(localization.localizedString("Settings"))
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(themeManager.textColor)
@@ -159,7 +163,7 @@ struct SettingsView: View {
                         // User Profile Section
                         if let user = authViewModel.userSession {
                             VStack(alignment: .leading, spacing: 16) {
-                                Text("Profil Bilgileri")
+                                Text(localization.localizedString("ProfileInformation"))
                                     .font(.headline)
                                     .fontWeight(.semibold)
                                     .foregroundColor(themeManager.textColor)
@@ -177,7 +181,7 @@ struct SettingsView: View {
                                         )
                                     
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(user.displayName ?? "Kullanıcı")
+                                        Text(user.displayName ?? localization.localizedString("User"))
                                             .font(.headline)
                                             .foregroundColor(themeManager.textColor)
                                         
@@ -196,31 +200,60 @@ struct SettingsView: View {
                                 .background(themeManager.cardBackground)
                                 .cornerRadius(12)
                                 .padding(.horizontal, 20)
+                                .onTapGesture {
+                                    showProfileView = true
+                                }
                             }
                         }
                         
                         // Settings Options
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Uygulama Ayarları")
+                            Text(localization.localizedString("AppSettings"))
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(themeManager.textColor)
                                 .padding(.horizontal, 20)
                             
                             VStack(spacing: 1) {
-                                SettingsRow(icon: "bell", title: "Bildirimler", color: .orange)
+                                SettingsRow(icon: "bell", title: localization.localizedString("Notifications"), color: .orange)
                                 
                                 // Koyu Tema Toggle
                                 SettingsToggleRow(
                                     icon: "moon.fill",
-                                    title: "Koyu Tema",
+                                    title: localization.localizedString("DarkMode"),
                                     color: .purple,
                                     isOn: $themeManager.isDarkMode
                                 )
                                 
-                                SettingsRow(icon: "globe", title: "Dil Ayarları", color: .blue)
-                                SettingsRow(icon: "questionmark.circle", title: "Yardım", color: .green)
-                                SettingsRow(icon: "info.circle", title: "Hakkında", color: .gray)
+                                // Language picker row
+                                HStack(spacing: 16) {
+                                    Image(systemName: "globe")
+                                        .font(.title3)
+                                        .foregroundColor(.blue)
+                                        .frame(width: 24)
+                                    
+                                    Text(localization.localizedString("Language"))
+                                        .font(.body)
+                                        .foregroundColor(themeManager.textColor)
+                                    
+                                    Spacer()
+                                    
+                                    Picker("", selection: Binding(
+                                        get: { localization.currentLocale.identifier },
+                                        set: { newId in
+                                            localization.currentLocale = Locale(identifier: newId)
+                                        }
+                                    )) {
+                                        Text(localization.localizedString("Turkish")).tag("tr")
+                                        Text(localization.localizedString("English")).tag("en")
+                                    }
+                                    .pickerStyle(.segmented)
+                                    .frame(width: 180)
+                                }
+                                .padding(16)
+                                
+                                SettingsRow(icon: "questionmark.circle", title: localization.localizedString("Help"), color: .green)
+                                SettingsRow(icon: "info.circle", title: localization.localizedString("About"), color: .gray)
                             }
                             .background(themeManager.cardBackground)
                             .cornerRadius(12)
@@ -237,7 +270,7 @@ struct SettingsView: View {
                                         .font(.title3)
                                         .foregroundColor(.red)
                                     
-                                    Text("Çıkış Yap")
+                                    Text(localization.localizedString("SignOut"))
                                         .font(.headline)
                                         .foregroundColor(.red)
                                     
@@ -258,6 +291,11 @@ struct SettingsView: View {
             .background(themeManager.backgroundColor)
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showProfileView) {
+            ProfileView()
+                .environmentObject(authViewModel)
+                .environmentObject(themeManager)
+        }
     }
 }
 

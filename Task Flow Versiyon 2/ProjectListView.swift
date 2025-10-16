@@ -2,16 +2,23 @@ import SwiftUI
 
 struct ProjectListView: View {
     @EnvironmentObject var themeManager: ThemeManager
+    @StateObject private var localization = LocalizationManager.shared
     @State private var searchText = ""
-    @State private var selectedSortOption = "Tarih"
-    @State private var selectedFilterOption = "Tümü"
+    @State private var selectedSortOption = LocalizationManager.shared.localizedString("SortOptionDate")
+    @State private var selectedFilterOption = LocalizationManager.shared.localizedString("FilterOptionAll")
     @State private var projects = Project.sampleProjects
     @State private var showAnalytics = false
     @State private var showProjectBoard = false
+    @State private var showProjectDetail = false
     @State private var selectedProject: Project?
     
-    let sortOptions = ["Tarih", "İsim", "İlerleme"]
-    let filterOptions = ["Tümü", "Aktif", "Tamamlanan"]
+    var sortOptions: [String] {
+        [localization.localizedString("SortOptionDate"), localization.localizedString("SortOptionName"), localization.localizedString("SortOptionProgress")]
+    }
+
+    var filterOptions: [String] {
+        [localization.localizedString("FilterOptionAll"), localization.localizedString("FilterOptionActive"), localization.localizedString("FilterOptionCompleted")]
+    }
     
     var filteredProjects: [Project] {
         var filtered = projects
@@ -25,22 +32,26 @@ struct ProjectListView: View {
         }
         
         // Durum filtresi
+        let activeKey = localization.localizedString("FilterOptionActive")
+        let completedKey = localization.localizedString("FilterOptionCompleted")
         switch selectedFilterOption {
-        case "Aktif":
+        case activeKey:
             filtered = filtered.filter { !$0.isCompleted }
-        case "Tamamlanan":
+        case completedKey:
             filtered = filtered.filter { $0.isCompleted }
         default:
             break
         }
         
         // Sıralama
+        let nameKey = localization.localizedString("SortOptionName")
+        let progressKey = localization.localizedString("SortOptionProgress")
         switch selectedSortOption {
-        case "İsim":
+        case nameKey:
             filtered = filtered.sorted { $0.title < $1.title }
-        case "İlerleme":
+        case progressKey:
             filtered = filtered.sorted { $0.progressPercentage > $1.progressPercentage }
-        default: // Tarih
+        default: // Date
             filtered = filtered.sorted { $0.createdDate > $1.createdDate }
         }
         
@@ -57,7 +68,7 @@ struct ProjectListView: View {
                 VStack(spacing: 0) {
                     // Header with title and buttons (Android style)
                     HStack {
-                        Text("Projeler")
+                        Text(localization.localizedString("Projects"))
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(themeManager.textColor)
@@ -112,7 +123,7 @@ struct ProjectListView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(themeManager.secondaryTextColor)
                         
-                        TextField("Projelerde ara", text: $searchText)
+                        TextField(localization.localizedString("SearchProjectsPlaceholder"), text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .foregroundColor(themeManager.textColor)
                     }
@@ -141,7 +152,7 @@ struct ProjectListView: View {
                             }
                         } label: {
                             HStack {
-                                Text("Sırala")
+                                Text(localization.localizedString("Sort"))
                                 Image(systemName: "chevron.down")
                             }
                             .font(.subheadline)
@@ -168,7 +179,7 @@ struct ProjectListView: View {
                             }
                         } label: {
                             HStack {
-                                Text("Filtrele")
+                                Text(localization.localizedString("Filter"))
                                 Image(systemName: "chevron.down")
                             }
                             .font(.subheadline)
@@ -187,7 +198,7 @@ struct ProjectListView: View {
                     // Projects section
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
-                            Text("Projelerim")
+                            Text(localization.localizedString("MyProjects"))
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundColor(themeManager.textColor)
@@ -204,7 +215,8 @@ struct ProjectListView: View {
                                     ProjectCardView(project: project)
                                         .environmentObject(themeManager)
                                         .onTapGesture {
-                                            // Navigate to project detail
+                                            selectedProject = project
+                                            showProjectDetail = true
                                         }
                                 }
                             }
@@ -215,6 +227,12 @@ struct ProjectListView: View {
             }
         }
         .navigationBarHidden(true)
+        .sheet(isPresented: $showProjectDetail) {
+            if let project = selectedProject {
+                ProjectDetailView(project: project)
+                    .environmentObject(themeManager)
+            }
+        }
         .sheet(isPresented: $showAnalytics) {
             if let project = selectedProject {
                 ProjectAnalyticsView(project: project)
@@ -228,9 +246,11 @@ struct ProjectListView: View {
     }
     
     private func addNewProject() {
+        let titleFormat = LocalizationManager.shared.localizedString("NewProjectTitle")
+        let newTitle = String(format: titleFormat, projects.count + 1)
         let newProject = Project(
-            title: "Yeni Proje \(projects.count + 1)",
-            description: "Yeni proje açıklaması",
+            title: newTitle,
+            description: LocalizationManager.shared.localizedString("NewProjectDescription"),
             iconName: "folder.fill",
             iconColor: "green"
         )

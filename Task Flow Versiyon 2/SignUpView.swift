@@ -10,6 +10,7 @@ import SwiftUI
 struct SignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.presentationMode) var presentationMode
+    @StateObject private var localization = LocalizationManager.shared
     @State private var name = ""
     @State private var email = ""
     @State private var password = ""
@@ -41,13 +42,13 @@ struct SignUpView: View {
             .background(darkBackground)
             .ignoresSafeArea()
             .navigationBarHidden(true)
-            .alert("Şifreler Eşleşmiyor", isPresented: $showPasswordMismatchAlert) {
-                Button("Tamam", role: .cancel) { }
+            .alert(localization.localizedString("PasswordsDoNotMatch"), isPresented: $showPasswordMismatchAlert) {
+                Button(localization.localizedString("OK"), role: .cancel) { }
             } message: {
-                Text("Lütfen şifrelerin aynı olduğundan emin olun.")
+                Text(localization.localizedString("PasswordsDoNotMatchMessage"))
             }
-            .alert("Hata", isPresented: .constant(authViewModel.errorMessage != nil)) {
-                Button("Tamam") {
+            .alert(localization.localizedString("Error"), isPresented: .constant(authViewModel.errorMessage != nil)) {
+                Button(localization.localizedString("OK")) {
                     authViewModel.errorMessage = nil
                 }
             } message: {
@@ -91,7 +92,7 @@ struct SignUpView: View {
             }
             
             // Title
-            Text("Hesap Oluştur")
+            Text(localization.localizedString("CreateAccount"))
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
             
@@ -104,11 +105,11 @@ struct SignUpView: View {
         VStack(spacing: 24) {
             // Welcome Text
             VStack(spacing: 8) {
-                Text("Raptiye'ye Katılın")
+                Text(localization.localizedString("CreateAccount"))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.white)
                 
-                Text("Hesabınızı oluşturarak başlayın")
+                Text(localization.localizedString("CreateAccountSubtitle"))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.white.opacity(0.7))
             }
@@ -116,7 +117,7 @@ struct SignUpView: View {
             
             // Name Field
             CustomTextField(
-                placeholder: "Ad Soyad",
+                placeholder: localization.localizedString("FullName"),
                 text: $name,
                 keyboardType: .default,
                 systemImage: "person"
@@ -124,7 +125,7 @@ struct SignUpView: View {
             
             // Email Field
             CustomTextField(
-                placeholder: "E-posta",
+                placeholder: localization.localizedString("Email"),
                 text: $email,
                 keyboardType: .emailAddress,
                 systemImage: "envelope"
@@ -132,14 +133,14 @@ struct SignUpView: View {
             
             // Password Field
             CustomSecureField(
-                placeholder: "Şifre",
+                placeholder: localization.localizedString("Password"),
                 text: $password,
                 systemImage: "lock"
             )
             
             // Confirm Password Field
             CustomSecureField(
-                placeholder: "Şifre Tekrar",
+                placeholder: localization.localizedString("PasswordConfirm"),
                 text: $confirmPassword,
                 systemImage: "lock"
             )
@@ -156,7 +157,7 @@ struct SignUpView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .scaleEffect(0.8)
                     } else {
-                        Text("Kayıt Ol")
+                        Text(localization.localizedString("SignUp"))
                             .font(.system(size: 18, weight: .semibold))
                     }
                 }
@@ -173,11 +174,11 @@ struct SignUpView: View {
             
             // Sign In Option
             HStack(spacing: 4) {
-                Text("Zaten hesabınız var mı?")
+                Text(localization.localizedString("AlreadyHaveAccount"))
                     .font(.system(size: 16))
                     .foregroundColor(.white.opacity(0.8))
                 
-                Button("Giriş Yap") {
+                Button(localization.localizedString("SignIn")) {
                     presentationMode.wrappedValue.dismiss()
                 }
                 .font(.system(size: 16, weight: .semibold))

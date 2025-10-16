@@ -11,6 +11,7 @@ import SwiftUI
 
 struct EnhancedLoginView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @StateObject private var localization = LocalizationManager.shared
     @State private var isShowingSignUp = false
     @State private var isShowingForgotPassword = false
     @State private var email = ""
@@ -43,19 +44,19 @@ struct EnhancedLoginView: View {
         .sheet(isPresented: $isShowingSignUp) {
             SignUpView()
         }
-        .alert("Şifre Sıfırlama", isPresented: $isShowingForgotPassword) {
-            TextField("E-posta adresiniz", text: $email)
-            Button("Gönder") {
+        .alert(localization.localizedString("ForgotPassword"), isPresented: $isShowingForgotPassword) {
+            TextField(localization.localizedString("Email"), text: $email)
+            Button(localization.localizedString("Send")) {
                 Task {
                     await authViewModel.resetPassword(email: email)
                 }
             }
-            Button("İptal", role: .cancel) { }
+            Button(localization.localizedString("Cancel"), role: .cancel) { }
         } message: {
-            Text("Şifre sıfırlama bağlantısı e-posta adresinize gönderilecektir.")
+            Text(localization.localizedString("ForgotPasswordMessage"))
         }
-        .alert("Hata", isPresented: .constant(authViewModel.errorMessage != nil)) {
-            Button("Tamam") {
+        .alert(localization.localizedString("Error"), isPresented: .constant(authViewModel.errorMessage != nil)) {
+            Button(localization.localizedString("OK")) {
                 authViewModel.errorMessage = nil
             }
         } message: {
@@ -88,7 +89,7 @@ struct EnhancedLoginView: View {
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
                 
-                Text("Proje yönetiminizi kolaylaştırın")
+                Text(localization.localizedString("Welcome"))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -103,11 +104,11 @@ struct EnhancedLoginView: View {
         VStack(spacing: 24) {
             // Welcome Text
             VStack(spacing: 8) {
-                Text("Hoş Geldiniz")
+                Text(localization.localizedString("Welcome"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
                 
-                Text("Hesabınıza giriş yapın")
+                Text(localization.localizedString("SignIn"))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
             }
@@ -115,7 +116,7 @@ struct EnhancedLoginView: View {
             
             // Email Field
             CustomTextField(
-                placeholder: "E-posta",
+                placeholder: localization.localizedString("Email"),
                 text: $email,
                 keyboardType: .emailAddress,
                 systemImage: "envelope"
@@ -123,7 +124,7 @@ struct EnhancedLoginView: View {
             
             // Password Field
             CustomSecureField(
-                placeholder: "Şifre",
+                placeholder: localization.localizedString("Password"),
                 text: $password,
                 systemImage: "lock"
             )
@@ -131,7 +132,7 @@ struct EnhancedLoginView: View {
             // Forgot Password Button
             HStack {
                 Spacer()
-                Button("Şifremi unuttum") {
+                Button(localization.localizedString("ForgotPassword")) {
                     isShowingForgotPassword = true
                 }
                 .font(.system(size: 14, weight: .medium))
@@ -151,7 +152,7 @@ struct EnhancedLoginView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .scaleEffect(0.8)
                     } else {
-                        Text("Giriş Yap")
+                        Text(localization.localizedString("SignIn"))
                             .font(.system(size: 18, weight: .semibold))
                     }
                 }
@@ -168,11 +169,11 @@ struct EnhancedLoginView: View {
             
             // Sign Up Option
             HStack(spacing: 4) {
-                Text("Hesabın yok mu?")
+                Text(localization.localizedString("NoAccount"))
                     .font(.system(size: 16))
                     .foregroundColor(.white.opacity(0.8))
                 
-                Button("Kayıt Ol") {
+                Button(localization.localizedString("SignUp")) {
                     isShowingSignUp = true
                 }
                 .font(.system(size: 16, weight: .semibold))

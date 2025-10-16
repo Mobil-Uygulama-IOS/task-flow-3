@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ProjectDetailView: View {
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var themeManager: ThemeManager
+    @StateObject private var localization = LocalizationManager.shared
     let project: Project
     @State private var selectedTask: ProjectTask?
     @State private var showTaskDetail = false
@@ -9,8 +11,8 @@ struct ProjectDetailView: View {
     
     var body: some View {
         ZStack {
-            // Dark background
-            Color(red: 0.11, green: 0.13, blue: 0.16)
+            // Background
+            themeManager.backgroundColor
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -21,15 +23,15 @@ struct ProjectDetailView: View {
                     }) {
                         Image(systemName: "arrow.left")
                             .font(.title3)
-                            .foregroundColor(.white)
+                            .foregroundColor(themeManager.textColor)
                     }
                     
                     Spacer()
                     
-                    Text("Proje Detayları")
+                    Text(localization.localizedString("ProjectDetails"))
                         .font(.title3)
                         .fontWeight(.semibold)
-                        .foregroundColor(.white)
+                        .foregroundColor(themeManager.textColor)
                     
                     Spacer()
                     
@@ -39,7 +41,7 @@ struct ProjectDetailView: View {
                     }) {
                         Image(systemName: "chart.bar.fill")
                             .font(.title3)
-                            .foregroundColor(.white)
+                            .foregroundColor(themeManager.textColor)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -52,11 +54,11 @@ struct ProjectDetailView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text(project.title)
                                 .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(themeManager.textColor)
                             
                             Text(project.description)
                                 .font(.system(size: 15))
-                                .foregroundColor(.gray)
+                                .foregroundColor(themeManager.secondaryTextColor)
                                 .lineSpacing(4)
                             
                             if !project.dueDateString.isEmpty {
@@ -69,21 +71,21 @@ struct ProjectDetailView: View {
                             if project.tasksCount > 0 {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack {
-                                        Text("İlerleme")
+                                        Text(localization.localizedString("Progress"))
                                             .font(.system(size: 14))
-                                            .foregroundColor(.gray)
+                                            .foregroundColor(themeManager.secondaryTextColor)
                                         
                                         Spacer()
                                         
                                         Text("\(project.completedTasksCount)/\(project.tasksCount)")
                                             .font(.system(size: 14))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(themeManager.textColor)
                                     }
                                     
                                     GeometryReader { geometry in
                                         ZStack(alignment: .leading) {
                                             RoundedRectangle(cornerRadius: 4)
-                                                .fill(Color.gray.opacity(0.3))
+                                                .fill(themeManager.secondaryTextColor.opacity(0.3))
                                                 .frame(height: 8)
                                             
                                             RoundedRectangle(cornerRadius: 4)
@@ -98,15 +100,51 @@ struct ProjectDetailView: View {
                         .padding(20)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
-                                .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                .fill(themeManager.cardBackground)
+                        )
+                        
+                        // Team Section
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text(localization.localizedString("Team"))
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(themeManager.textColor)
+                            
+                            // Team Leader
+                            if let leader = project.teamLeader {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text(localization.localizedString("TeamLeader"))
+                                        .font(.system(size: 14))
+                                        .foregroundColor(themeManager.secondaryTextColor)
+                                    
+                                    ProjectTeamMemberCard(user: leader, taskCount: countTasksForUser(leader), isLeader: true)
+                                }
+                            }
+                            
+                            // Team Members
+                            if !project.teamMembers.isEmpty {
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text(localization.localizedString("TeamMembers"))
+                                        .font(.system(size: 14))
+                                        .foregroundColor(themeManager.secondaryTextColor)
+                                    
+                                    ForEach(project.teamMembers, id: \.uid) { member in
+                                        ProjectTeamMemberCard(user: member, taskCount: countTasksForUser(member), isLeader: false)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(themeManager.cardBackground)
                         )
                         
                         // Tasks Section
                         VStack(alignment: .leading, spacing: 16) {
                             HStack {
-                                Text("Görevler")
+                                Text(localization.localizedString("Tasks"))
                                     .font(.system(size: 20, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeManager.textColor)
                                 
                                 Spacer()
                                 
@@ -123,17 +161,18 @@ struct ProjectDetailView: View {
                                 VStack(spacing: 12) {
                                     Image(systemName: "tray")
                                         .font(.system(size: 40))
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(themeManager.secondaryTextColor)
                                     
                                     Text("Henüz görev eklenmemiş")
                                         .font(.system(size: 15))
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(themeManager.secondaryTextColor)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 40)
                             } else {
                                 ForEach(project.tasks) { task in
                                     TaskRowCard(task: task)
+                                        .environmentObject(themeManager)
                                         .onTapGesture {
                                             selectedTask = task
                                             showTaskDetail = true
@@ -157,10 +196,79 @@ struct ProjectDetailView: View {
             ProjectAnalyticsView(project: project)
         }
     }
+    
+    // MARK: - Helper Methods
+    private func countTasksForUser(_ user: User) -> Int {
+        project.tasks.filter { task in
+            guard let assignee = task.assignee, let userEmail = user.email else { return false }
+            return assignee.email == userEmail
+        }.count
+    }
+}
+
+// MARK: - Team Member Card
+struct ProjectTeamMemberCard: View {
+    @EnvironmentObject var themeManager: ThemeManager
+    let user: User
+    let taskCount: Int
+    let isLeader: Bool
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Avatar
+            ZStack {
+                Circle()
+                    .fill(isLeader ? Color.orange.opacity(0.2) : Color.blue.opacity(0.2))
+                    .frame(width: 45, height: 45)
+                
+                Text(user.initials)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(isLeader ? .orange : .blue)
+            }
+            
+            // User Info
+            VStack(alignment: .leading, spacing: 3) {
+                Text(user.displayName ?? "User")
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(themeManager.textColor)
+                
+                if let email = user.email {
+                    Text(email)
+                        .font(.caption)
+                        .foregroundColor(themeManager.secondaryTextColor)
+                }
+            }
+            
+            Spacer()
+            
+            // Task Count Badge
+            if taskCount > 0 {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundColor(.green)
+                    
+                    Text("\(taskCount)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(themeManager.textColor)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(themeManager.searchBackground)
+                .cornerRadius(12)
+            }
+        }
+        .padding(12)
+        .background(themeManager.searchBackground)
+        .cornerRadius(12)
+    }
 }
 
 // MARK: - Task Row Card
 struct TaskRowCard: View {
+    @EnvironmentObject var themeManager: ThemeManager
     let task: ProjectTask
     
     var body: some View {
@@ -171,14 +279,14 @@ struct TaskRowCard: View {
             }) {
                 Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24))
-                    .foregroundColor(task.isCompleted ? .green : .gray)
+                    .foregroundColor(task.isCompleted ? .green : themeManager.secondaryTextColor)
             }
             
             // Task info
             VStack(alignment: .leading, spacing: 6) {
                 Text(task.title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(themeManager.textColor)
                     .strikethrough(task.isCompleted)
                     .lineLimit(1)
                 
@@ -190,7 +298,7 @@ struct TaskRowCard: View {
                             Text(assignee.name)
                                 .font(.system(size: 12))
                         }
-                        .foregroundColor(.gray)
+                        .foregroundColor(themeManager.secondaryTextColor)
                     }
                     
                     if !task.dueDateString.isEmpty {
@@ -200,7 +308,7 @@ struct TaskRowCard: View {
                             Text(task.dueDateString)
                                 .font(.system(size: 12))
                         }
-                        .foregroundColor(.gray)
+                        .foregroundColor(themeManager.secondaryTextColor)
                     }
                 }
             }
@@ -209,12 +317,12 @@ struct TaskRowCard: View {
             
             Image(systemName: "chevron.right")
                 .font(.system(size: 12))
-                .foregroundColor(.gray)
+                .foregroundColor(themeManager.secondaryTextColor)
         }
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                .fill(themeManager.cardBackground)
         )
     }
 }
@@ -222,7 +330,7 @@ struct TaskRowCard: View {
 // MARK: - Preview
 struct ProjectDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        ProjectDetailView(project: Project.sampleProjects[0])
-            .preferredColorScheme(.dark)
+        ProjectDetailView(project: Project.sampleProjects[1])
+            .environmentObject(ThemeManager.shared)
     }
 }

@@ -316,11 +316,3 @@ struct ProjectDetailView_Previews: PreviewProvider {
             .preferredColorScheme(.dark)
     }
 }
-
-// MARK: - Preview
-struct ProjectDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        ProjectDetailView(project: Project.sampleProjects[1])
-            .environmentObject(ThemeManager.shared)
-    }
-}

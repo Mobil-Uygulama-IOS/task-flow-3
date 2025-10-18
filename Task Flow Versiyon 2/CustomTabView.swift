@@ -205,10 +205,6 @@ struct SettingsView: View {
                                 }
                             }
                         }
-                        .sheet(isPresented: $showProfileView) {
-                            ProfileEditView()
-                                .environmentObject(authViewModel)
-                        }
                         
                         // Settings Options
                         VStack(alignment: .leading, spacing: 16) {
@@ -296,9 +292,8 @@ struct SettingsView: View {
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showProfileView) {
-            ProfileView()
+            ProfileEditView()
                 .environmentObject(authViewModel)
-                .environmentObject(themeManager)
         }
     }
 }

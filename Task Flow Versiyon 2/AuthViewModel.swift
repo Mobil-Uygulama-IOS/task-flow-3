@@ -98,6 +98,7 @@ final class AuthViewModel: ObservableObject {
         print("✅ Mock Sign Out Successful")
     }
     
+        
     // MARK: - Reset Password (Mock Implementation)
     @MainActor
     func resetPassword(email: String) async {
@@ -116,4 +117,29 @@ final class AuthViewModel: ObservableObject {
         
         isLoading = false
     }
+    
+    // MARK: - Update Display Name
+    func updateDisplayName(_ name: String) {
+        if var user = userSession {
+            user.displayName = name
+            userSession = user
+            print("✅ Display Name Updated: \(name)")
+        }
+    }
+    
+    // MARK: - Send Password Reset (with callback)
+    func sendPasswordReset(email: String, completion: @escaping (Bool) -> Void) {
+        // Simulate network delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            if email.contains("@") {
+                print("✅ Password Reset Email Sent to: \(email)")
+                completion(true)
+            } else {
+                print("❌ Invalid email for password reset")
+                completion(false)
+            }
+        }
+    }
+}
+
 }

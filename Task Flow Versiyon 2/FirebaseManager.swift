@@ -24,7 +24,7 @@ final class FirebaseManager {
 struct MockUser {
     let uid: String
     let email: String?
-    let displayName: String?
+    var displayName: String?
     
     static let example = MockUser(
         uid: "mock-user-id",

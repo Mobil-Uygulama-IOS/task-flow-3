@@ -11,6 +11,7 @@ struct ProjectListView: View {
     @State private var showProjectBoard = false
     @State private var showProjectDetail = false
     @State private var selectedProject: Project?
+    @State private var showCreateProject = false
     
     var sortOptions: [String] {
         [localization.localizedString("SortOptionDate"), localization.localizedString("SortOptionName"), localization.localizedString("SortOptionProgress")]
@@ -103,7 +104,7 @@ struct ProjectListView: View {
                             
                             // Add new project button
                             Button(action: {
-                                addNewProject()
+                                showCreateProject = true
                             }) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 20))
@@ -243,6 +244,15 @@ struct ProjectListView: View {
             ProjectBoardView()
                 .environmentObject(themeManager)
         }
+                                .sheet(isPresented: $showCreateProject) {
+                            CreateProjectView(projects: $projects) { newProject in
+                                // Yeni proje oluşturulduğunda otomatik olarak aç
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    selectedProject = newProject
+                                    showProjectDetail = true
+                                }
+                            }
+                        }
     }
     
     private func addNewProject() {

@@ -6,22 +6,25 @@ struct ProjectDetailView: View {
     @State private var selectedTask: ProjectTask?
     @State private var showTaskDetail = false
     @State private var showAnalytics = false
+    @State private var showAddTask = false
+    @State private var projectTasks: [ProjectTask]
     
-    var teamMembers: [TaskAssignee] {
-        var members: [TaskAssignee] = []
-        var seenIds = Set<UUID>()
-        
-        for task in project.tasks {
-            if let assignee = task.assignee, !seenIds.contains(assignee.id) {
-                members.append(assignee)
-                seenIds.insert(assignee.id)
-            }
+    init(project: Project) {
+        self.project = project
+        self._projectTasks = State(initialValue: project.tasks)
+    }
+    
+    var teamMembers: [User] {
+        var members: [User] = []
+        if let leader = project.teamLeader {
+            members.append(leader)
         }
+        members.append(contentsOf: project.teamMembers)
         return members
     }
     
-    var projectLeader: TaskAssignee? {
-        teamMembers.first
+    var projectLeader: User? {
+        project.teamLeader ?? project.teamMembers.first
     }
     
     var body: some View {
@@ -83,7 +86,7 @@ struct ProjectDetailView: View {
                             }
                             
                             // Progress
-                            if project.tasksCount > 0 {
+                            if projectTasks.count > 0 {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack {
                                         Text("İlerleme")
@@ -92,7 +95,7 @@ struct ProjectDetailView: View {
                                         
                                         Spacer()
                                         
-                                        Text("\(project.completedTasksCount)/\(project.tasksCount)")
+                                        Text("\(projectTasks.filter { $0.isCompleted }.count)/\(projectTasks.count)")
                                             .font(.system(size: 14))
                                             .foregroundColor(.white)
                                     }
@@ -105,7 +108,7 @@ struct ProjectDetailView: View {
                                             
                                             RoundedRectangle(cornerRadius: 4)
                                                 .fill(Color.blue)
-                                                .frame(width: geometry.size.width * project.progressPercentage, height: 8)
+                                                .frame(width: geometry.size.width * (projectTasks.count > 0 ? Double(projectTasks.filter { $0.isCompleted }.count) / Double(projectTasks.count) : 0), height: 8)
                                         }
                                     }
                                     .frame(height: 8)
@@ -159,7 +162,7 @@ struct ProjectDetailView: View {
                                 Spacer()
                                 
                                 Button(action: {
-                                    // Add new task
+                                    showAddTask = true
                                 }) {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 24))
@@ -167,7 +170,7 @@ struct ProjectDetailView: View {
                                 }
                             }
                             
-                            if project.tasks.isEmpty {
+                            if projectTasks.isEmpty {
                                 VStack(spacing: 12) {
                                     Image(systemName: "tray")
                                         .font(.system(size: 40))
@@ -180,7 +183,7 @@ struct ProjectDetailView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 40)
                             } else {
-                                ForEach(project.tasks) { task in
+                                ForEach(projectTasks) { task in
                                     TaskRowCard(task: task)
                                         .onTapGesture {
                                             selectedTask = task
@@ -204,12 +207,19 @@ struct ProjectDetailView: View {
         .sheet(isPresented: $showAnalytics) {
             ProjectAnalyticsView(project: project)
         }
+        .sheet(isPresented: $showAddTask) {
+            AddTaskView(
+                tasks: $projectTasks,
+                projectId: project.id,
+                availableAssignees: teamMembers
+            )
+        }
     }
 }
 
 // MARK: - Team Member Row
 struct TeamMemberRow: View {
-    let member: TaskAssignee
+    let member: User
     let isLeader: Bool
     
     var avatarColor: Color {
@@ -223,18 +233,18 @@ struct TeamMemberRow: View {
                 .fill(avatarColor.opacity(0.3))
                 .frame(width: 45, height: 45)
                 .overlay(
-                    Text(String(member.name.prefix(1)).uppercased())
+                    Text(member.initials)
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(avatarColor)
                 )
             
             // Member info
             VStack(alignment: .leading, spacing: 4) {
-                Text(member.name)
+                Text(member.displayName ?? "Unknown")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white)
                 
-                Text(member.email)
+                Text(member.email ?? "")
                     .font(.system(size: 13))
                     .foregroundColor(.gray)
             }

@@ -34,6 +34,13 @@ struct TaskComment: Identifiable, Codable {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: createdDate)
     }
+    
+    var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMMM yyyy, HH:mm"
+        formatter.locale = Locale(identifier: "tr_TR")
+        return formatter.string(from: createdDate)
+    }
 }
 
 // MARK: - Task Priority
@@ -80,9 +87,17 @@ struct ProjectTask: Identifiable, Codable {
     var formattedDueDate: String {
         guard let dueDate = dueDate else { return "" }
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd MMMM"
+        formatter.dateFormat = "dd MMMM yyyy"
         formatter.locale = Locale(identifier: "tr_TR")
-        return "Son teslim: \(formatter.string(from: dueDate))"
+        return formatter.string(from: dueDate)
+    }
+    
+    /// Formatlanmış oluşturulma tarihi
+    var formattedCreatedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMMM yyyy"
+        formatter.locale = Locale(identifier: "tr_TR")
+        return formatter.string(from: createdDate)
     }
 }
 

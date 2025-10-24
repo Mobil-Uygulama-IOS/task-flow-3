@@ -2,17 +2,10 @@ import SwiftUI
 
 struct ProjectDetailView: View {
     @Environment(\.presentationMode) var presentationMode
-    let project: Project
+    @Binding var project: Project
     @State private var selectedTask: ProjectTask?
-    @State private var showTaskDetail = false
     @State private var showAnalytics = false
     @State private var showAddTask = false
-    @State private var projectTasks: [ProjectTask]
-    
-    init(project: Project) {
-        self.project = project
-        self._projectTasks = State(initialValue: project.tasks)
-    }
     
     var teamMembers: [User] {
         var members: [User] = []
@@ -25,6 +18,18 @@ struct ProjectDetailView: View {
     
     var projectLeader: User? {
         project.teamLeader ?? project.teamMembers.first
+    }
+    
+    var priorityColor: Color {
+        guard let task = selectedTask else { return .blue }
+        switch task.priority {
+        case .high:
+            return .red
+        case .medium:
+            return .orange
+        case .low:
+            return .green
+        }
     }
     
     var body: some View {
@@ -86,7 +91,7 @@ struct ProjectDetailView: View {
                             }
                             
                             // Progress
-                            if projectTasks.count > 0 {
+                            if project.tasks.count > 0 {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack {
                                         Text("İlerleme")
@@ -95,7 +100,7 @@ struct ProjectDetailView: View {
                                         
                                         Spacer()
                                         
-                                        Text("\(projectTasks.filter { $0.isCompleted }.count)/\(projectTasks.count)")
+                                        Text("\(project.tasks.filter { $0.isCompleted }.count)/\(project.tasks.count)")
                                             .font(.system(size: 14))
                                             .foregroundColor(.white)
                                     }
@@ -108,7 +113,7 @@ struct ProjectDetailView: View {
                                             
                                             RoundedRectangle(cornerRadius: 4)
                                                 .fill(Color.blue)
-                                                .frame(width: geometry.size.width * (projectTasks.count > 0 ? Double(projectTasks.filter { $0.isCompleted }.count) / Double(projectTasks.count) : 0), height: 8)
+                                                .frame(width: geometry.size.width * (project.tasks.count > 0 ? Double(project.tasks.filter { $0.isCompleted }.count) / Double(project.tasks.count) : 0), height: 8)
                                         }
                                     }
                                     .frame(height: 8)
@@ -170,7 +175,7 @@ struct ProjectDetailView: View {
                                 }
                             }
                             
-                            if projectTasks.isEmpty {
+                            if project.tasks.isEmpty {
                                 VStack(spacing: 12) {
                                     Image(systemName: "tray")
                                         .font(.system(size: 40))
@@ -183,12 +188,14 @@ struct ProjectDetailView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 40)
                             } else {
-                                ForEach(projectTasks) { task in
-                                    TaskRowCard(task: task)
-                                        .onTapGesture {
-                                            selectedTask = task
-                                            showTaskDetail = true
-                                        }
+                                ForEach(Array(project.tasks.enumerated()), id: \.element.id) { index, task in
+                                    TaskRowCard(task: task) {
+                                        // Toggle completion
+                                        project.tasks[index].isCompleted.toggle()
+                                    }
+                                    .onTapGesture {
+                                        selectedTask = task
+                                    }
                                 }
                             }
                         }
@@ -199,17 +206,15 @@ struct ProjectDetailView: View {
             }
         }
         .navigationBarHidden(true)
-        .sheet(isPresented: $showTaskDetail) {
-            if let task = selectedTask {
-                TaskDetailView(task: task)
-            }
+        .sheet(item: $selectedTask) { task in
+            TaskDetailView(task: task)
         }
         .sheet(isPresented: $showAnalytics) {
             ProjectAnalyticsView(project: project)
         }
         .sheet(isPresented: $showAddTask) {
             AddTaskView(
-                tasks: $projectTasks,
+                tasks: $project.tasks,
                 projectId: project.id,
                 availableAssignees: teamMembers
             )
@@ -262,25 +267,71 @@ struct TeamMemberRow: View {
 // MARK: - Task Row Card
 struct TaskRowCard: View {
     let task: ProjectTask
+    var onToggleComplete: (() -> Void)?
+    
+    var priorityColor: Color {
+        switch task.priority {
+        case .high:
+            return .red
+        case .medium:
+            return .orange
+        case .low:
+            return .green
+        }
+    }
     
     var body: some View {
         HStack(spacing: 16) {
             // Checkbox
             Button(action: {
-                // Toggle task completion
+                onToggleComplete?()
             }) {
-                Image(systemName: task.isCompleted ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 24))
-                    .foregroundColor(task.isCompleted ? .green : .gray)
+                ZStack {
+                    if task.isCompleted {
+                        // Tamamlanmış - yeşil dolu daire
+                        Circle()
+                            .fill(Color.green)
+                            .frame(width: 24, height: 24)
+                        
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                    } else {
+                        // Tamamlanmamış - gri çember
+                        Circle()
+                            .stroke(Color.gray.opacity(0.5), lineWidth: 2)
+                            .frame(width: 24, height: 24)
+                    }
+                }
             }
+            .buttonStyle(PlainButtonStyle())
             
             // Task info
             VStack(alignment: .leading, spacing: 6) {
-                Text(task.title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .strikethrough(task.isCompleted)
-                    .lineLimit(1)
+                HStack(spacing: 8) {
+                    Text(task.title)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .strikethrough(task.isCompleted)
+                        .lineLimit(1)
+                    
+                    // Priority Badge
+                    HStack(spacing: 3) {
+                        Circle()
+                            .fill(priorityColor)
+                            .frame(width: 6, height: 6)
+                        
+                        Text(task.priority.rawValue)
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(priorityColor)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(priorityColor.opacity(0.2))
+                    )
+                }
                 
                 HStack(spacing: 8) {
                     if let assignee = task.assignee {
@@ -322,7 +373,7 @@ struct TaskRowCard: View {
 // MARK: - Preview
 struct ProjectDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        ProjectDetailView(project: Project.sampleProjects[0])
+        ProjectDetailView(project: .constant(Project.sampleProjects[0]))
             .preferredColorScheme(.dark)
     }
 }

@@ -92,8 +92,9 @@ struct ProjectDashboardView: View {
             }
             .navigationBarHidden(true)
             .sheet(isPresented: $showProjectDetail) {
-                if let project = selectedProject {
-                    ProjectDetailView(project: project)
+                if let selectedProject = selectedProject,
+                   let index = projects.firstIndex(where: { $0.id == selectedProject.id }) {
+                    ProjectDetailView(project: $projects[index])
                 }
             }
         }

@@ -21,7 +21,7 @@ final class FirebaseManager {
 }
 
 // MARK: - Mock User for Testing
-struct MockUser {
+struct MockUser: Codable {
     let uid: String
     let email: String?
     var displayName: String?

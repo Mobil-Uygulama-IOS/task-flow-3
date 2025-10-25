@@ -7,86 +7,105 @@
 
 import SwiftUI
 import Combine
-// import FirebaseAuth // Will be enabled after Firebase installation
 
-// MARK: - AuthViewModel (Mock Implementation)
+// MARK: - AuthViewModel (Backend Entegre)
 
 final class AuthViewModel: ObservableObject {
     @Published var userSession: MockUser?
+    @Published var currentToken: String?
     @Published var errorMessage: String?
     @Published var isLoading = false
     
+    private let networkManager = NetworkManager.shared
+    
     init() {
-        // Mock user session for testing
-        setupMockAuthState()
+        // Token'ı UserDefaults'tan yükle
+        loadSavedSession()
     }
     
-    // MARK: - Mock Auth State
-    private func setupMockAuthState() {
-        // Test için otomatik giriş - istediğinizde kapatabilirsiniz
-        // userSession = nil // Bu satırı uncomment edip alt satırı comment edin
-        
-        // Otomatik mock giriş
-        userSession = MockUser(
-            uid: "test-user-123",
-            email: "test@example.com",
-            displayName: "Test Kullanıcı"
-        )
+    // MARK: - Session Management
+    
+    private func loadSavedSession() {
+        if let token = UserDefaults.standard.string(forKey: "auth_token"),
+           let userData = UserDefaults.standard.data(forKey: "user_data"),
+           let user = try? JSONDecoder().decode(MockUser.self, from: userData) {
+            self.currentToken = token
+            self.userSession = user
+        }
     }
     
-    // MARK: - Sign In (Mock Implementation)
+    private func saveSession(token: String, user: MockUser) {
+        UserDefaults.standard.set(token, forKey: "auth_token")
+        if let userData = try? JSONEncoder().encode(user) {
+            UserDefaults.standard.set(userData, forKey: "user_data")
+        }
+        self.currentToken = token
+        self.userSession = user
+    }
+    
+    private func clearSession() {
+        UserDefaults.standard.removeObject(forKey: "auth_token")
+        UserDefaults.standard.removeObject(forKey: "user_data")
+        self.currentToken = nil
+        self.userSession = nil
+    }
+    
+    // MARK: - Sign In (Backend)
     @MainActor
     func signIn(email: String, password: String) async {
         isLoading = true
         errorMessage = nil
         
-        // Simulate network delay
-        try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
-        
-        // Mock authentication logic
-        if email.contains("@") && password.count >= 6 {
-            userSession = MockUser(
-                uid: "mock-\(UUID().uuidString)",
-                email: email,
-                displayName: email.components(separatedBy: "@").first?.capitalized
+        do {
+            let response = try await networkManager.login(email: email, password: password)
+            
+            let user = MockUser(
+                uid: response.data.uid,
+                email: response.data.email,
+                displayName: response.data.displayName ?? response.data.username ?? "Kullanıcı"
             )
-            print("✅ Mock Sign In Successful: \(email)")
-        } else {
-            if !email.contains("@") {
-                errorMessage = "Geçersiz e-posta adresi."
-            } else if password.count < 6 {
-                errorMessage = "Şifre en az 6 karakter olmalıdır."
-            }
+            
+            saveSession(token: response.token, user: user)
+            
+            
+            print("✅ Giriş başarılı: \(user.displayName ?? "Kullanıcı")")
+        } catch {
+            errorMessage = error.localizedDescription
+            print("❌ Giriş hatası: \(error)")
         }
         
         isLoading = false
     }
     
-    // MARK: - Sign Up (Mock Implementation)
+    // MARK: - Sign Up (Backend)
     @MainActor
     func signUp(email: String, password: String, fullName: String) async {
         isLoading = true
         errorMessage = nil
         
-        // Simulate network delay
-        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 seconds
-        
-        // Mock sign up logic
-        if email.contains("@") && password.count >= 6 && !fullName.isEmpty {
-            userSession = MockUser(
-                uid: "mock-\(UUID().uuidString)",
+        do {
+            // Username oluştur (fullName'den veya email'den)
+            let username = fullName.lowercased().replacingOccurrences(of: " ", with: "")
+            
+            let response = try await networkManager.register(
+                username: username,
                 email: email,
+                password: password,
                 displayName: fullName
             )
-            print("✅ Mock Sign Up Successful: \(fullName) (\(email))")
-        } else {
-            if !email.contains("@") {
-                errorMessage = "Geçersiz e-posta adresi."
-            } else if password.count < 6 {
-                errorMessage = "Şifre en az 6 karakter olmalıdır."
-            } else if fullName.isEmpty {
-                errorMessage = "Ad Soyad boş bırakılamaz."
-            }
+            
+            let user = MockUser(
+                uid: response.data.uid,
+                email: response.data.email,
+                displayName: response.data.displayName ?? fullName
+            )
+            
+            saveSession(token: response.token, user: user)
+            
+            print("✅ Kayıt başarılı: \(user.displayName ?? fullName)")
+        } catch {
+            errorMessage = error.localizedDescription
+            print("❌ Kayıt hatası: \(error)")
         }
         
         isLoading = false
@@ -94,8 +113,8 @@ final class AuthViewModel: ObservableObject {
     
     // MARK: - Sign Out
     func signOut() {
-        userSession = nil
-        print("✅ Mock Sign Out Successful")
+        clearSession()
+        print("✅ Çıkış başarılı")
     }
     
         

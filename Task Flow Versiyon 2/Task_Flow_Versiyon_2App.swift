@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import FirebaseCore
 
 @main
 struct Task_Flow_Versiyon_2App: App {
     init() {
-        // Configure Firebase (currently mock)
-        FirebaseManager.shared.configure()
+        // Configure Firebase
+        FirebaseApp.configure()
     }
     
     var body: some Scene {

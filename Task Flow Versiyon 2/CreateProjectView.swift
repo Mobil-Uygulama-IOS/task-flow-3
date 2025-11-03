@@ -2,7 +2,7 @@ import SwiftUI
 
 struct CreateProjectView: View {
     @Environment(\.presentationMode) var presentationMode
-    @Binding var projects: [Project]
+    @EnvironmentObject var projectManager: ProjectManager
     var onProjectCreated: ((Project) -> Void)?
     
     @State private var projectTitle: String = ""
@@ -411,21 +411,31 @@ struct CreateProjectView: View {
             teamMembers: selectedMembers
         )
         
-        // Add to projects list
-        projects.insert(newProject, at: 0)
-        
-        // Notify parent view about new project
-        onProjectCreated?(newProject)
-        
-        // Close view
-        presentationMode.wrappedValue.dismiss()
+        // Save to Firestore
+        Task {
+            do {
+                try await projectManager.createProject(newProject)
+                
+                // Notify parent view about new project
+                onProjectCreated?(newProject)
+                
+                // Close view
+                await MainActor.run {
+                    presentationMode.wrappedValue.dismiss()
+                }
+            } catch {
+                alertMessage = "Proje oluşturulamadı: \(error.localizedDescription)"
+                showAlert = true
+            }
+        }
     }
 }
 
 // MARK: - Preview
 struct CreateProjectView_Previews: PreviewProvider {
     static var previews: some View {
-        CreateProjectView(projects: .constant(Project.sampleProjects))
+        CreateProjectView()
+            .environmentObject(ProjectManager())
             .preferredColorScheme(.dark)
     }
 }

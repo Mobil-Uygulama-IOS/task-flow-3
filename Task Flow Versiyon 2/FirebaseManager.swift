@@ -7,19 +7,6 @@
 
 import Foundation
 
-// MARK: - FirebaseManager (Temporary without Firebase)
-
-final class FirebaseManager {
-    static let shared = FirebaseManager()
-    
-    private init() {}
-    
-    func configure() {
-        // Firebase configuration will be added here once Firebase is installed
-        print("Firebase configuration placeholder - Install Firebase SDK first")
-    }
-}
-
 // MARK: - Mock User for Testing
 struct MockUser: Codable {
     let uid: String

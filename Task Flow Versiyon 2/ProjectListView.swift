@@ -2,11 +2,11 @@ import SwiftUI
 
 struct ProjectListView: View {
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var projectManager: ProjectManager
     @StateObject private var localization = LocalizationManager.shared
     @State private var searchText = ""
     @State private var selectedSortOption = LocalizationManager.shared.localizedString("SortOptionDate")
     @State private var selectedFilterOption = LocalizationManager.shared.localizedString("FilterOptionAll")
-    @State private var projects = Project.sampleProjects
     @State private var showAnalytics = false
     @State private var showProjectBoard = false
     @State private var showProjectDetail = false
@@ -22,7 +22,7 @@ struct ProjectListView: View {
     }
     
     var filteredProjects: [Project] {
-        var filtered = projects
+        var filtered = projectManager.projects
         
         // Arama filtresi
         if !searchText.isEmpty {
@@ -79,7 +79,7 @@ struct ProjectListView: View {
                         HStack(spacing: 12) {
                             // Analytics button
                             Button(action: {
-                                selectedProject = projects.first
+                                selectedProject = projectManager.projects.first
                                 showAnalytics = true
                             }) {
                                 Image(systemName: "chart.bar.fill")
@@ -230,9 +230,17 @@ struct ProjectListView: View {
         .navigationBarHidden(true)
         .sheet(isPresented: $showProjectDetail) {
             if let selectedProject = selectedProject,
-               let index = projects.firstIndex(where: { $0.id == selectedProject.id }) {
-                ProjectDetailView(project: $projects[index])
-                    .environmentObject(themeManager)
+               let index = projectManager.projects.firstIndex(where: { $0.id == selectedProject.id }) {
+                ProjectDetailView(project: Binding(
+                    get: { projectManager.projects[index] },
+                    set: { updatedProject in
+                        Task {
+                            try? await projectManager.updateProject(updatedProject)
+                        }
+                    }
+                ))
+                .environmentObject(themeManager)
+                .environmentObject(projectManager)
             }
         }
         .sheet(isPresented: $showAnalytics) {
@@ -246,26 +254,30 @@ struct ProjectListView: View {
                 .environmentObject(themeManager)
         }
                                 .sheet(isPresented: $showCreateProject) {
-                            CreateProjectView(projects: $projects) { newProject in
+                            CreateProjectView { newProject in
                                 // Yeni proje oluşturulduğunda otomatik olarak aç
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                     selectedProject = newProject
                                     showProjectDetail = true
                                 }
                             }
+                            .environmentObject(projectManager)
                         }
     }
     
     private func addNewProject() {
         let titleFormat = LocalizationManager.shared.localizedString("NewProjectTitle")
-        let newTitle = String(format: titleFormat, projects.count + 1)
+        let newTitle = String(format: titleFormat, projectManager.projects.count + 1)
         let newProject = Project(
             title: newTitle,
             description: LocalizationManager.shared.localizedString("NewProjectDescription"),
             iconName: "folder.fill",
             iconColor: "green"
         )
-        projects.append(newProject)
+        
+        Task {
+            try? await projectManager.createProject(newProject)
+        }
     }
 }
 

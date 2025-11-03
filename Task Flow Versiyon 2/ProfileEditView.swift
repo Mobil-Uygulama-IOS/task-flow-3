@@ -239,17 +239,15 @@ struct ProfileEditView: View {
         
         isLoading = true
         
-        // Simulate API call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            // Here you would update the user profile in Firebase
-            // For now, we'll just show a success message
+        // Update display name in Firebase Auth
+        Task {
+            await authViewModel.updateDisplayName(displayName)
             
-            isLoading = false
-            alertMessage = "Profil bilgileriniz başarıyla güncellendi."
-            showAlert = true
-            
-            // Update display name in Firebase Auth
-            authViewModel.updateDisplayName(displayName)
+            await MainActor.run {
+                isLoading = false
+                alertMessage = "Profil bilgileriniz başarıyla güncellendi."
+                showAlert = true
+            }
         }
     }
     

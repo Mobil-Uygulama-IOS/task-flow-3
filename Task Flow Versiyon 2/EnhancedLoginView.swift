@@ -244,14 +244,17 @@ struct CustomSecureField: View {
             Group {
                 if isSecured {
                     SecureField(placeholder, text: $text)
+                        .textContentType(.password)
                 } else {
                     TextField(placeholder, text: $text)
+                        .textContentType(.password)
                 }
             }
             .font(.system(size: 16))
             .foregroundColor(.white)
             .autocapitalization(.none)
             .disableAutocorrection(true)
+            .textInputAutocapitalization(.never)
             
             Button(action: {
                 isSecured.toggle()

@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct ProjectDashboardView: View {
+    @EnvironmentObject var projectManager: ProjectManager
     @State private var selectedTab: ProjectStatus = .todo
-    @State private var projects = Project.sampleProjects
     @State private var selectedProject: Project?
     @State private var showProjectDetail = false
     
     var filteredProjects: [Project] {
-        projects.filter { $0.status == selectedTab }
+        projectManager.projects.filter { $0.status == selectedTab }
     }
     
     var body: some View {
@@ -93,8 +93,16 @@ struct ProjectDashboardView: View {
             .navigationBarHidden(true)
             .sheet(isPresented: $showProjectDetail) {
                 if let selectedProject = selectedProject,
-                   let index = projects.firstIndex(where: { $0.id == selectedProject.id }) {
-                    ProjectDetailView(project: $projects[index])
+                   let index = projectManager.projects.firstIndex(where: { $0.id == selectedProject.id }) {
+                    ProjectDetailView(project: Binding(
+                        get: { projectManager.projects[index] },
+                        set: { updatedProject in
+                            Task {
+                                try? await projectManager.updateProject(updatedProject)
+                            }
+                        }
+                    ))
+                    .environmentObject(projectManager)
                 }
             }
         }

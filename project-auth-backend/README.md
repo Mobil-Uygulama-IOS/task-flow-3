@@ -49,6 +49,7 @@ cd project-auth-backend
 npm install
 ```
 
+
 ## ⚙️ Configuration
 
 1. Create a `.env` file (already created):

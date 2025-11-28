@@ -21,21 +21,22 @@ TaskFlow, iOS platformu için geliştirilmiş modern bir proje yönetim uygulama
 ## 🛠 Teknolojiler
 
 - **SwiftUI**: Modern iOS UI framework'ü
-- **iOS 15+**: Minimum desteklenen sürüm
-- **Firebase**: (Gelecekte eklenecek) Backend servisleri
+- **iOS 17.0+**: Minimum desteklenen sürüm
+- **Firebase**: Backend servisleri (Auth, Firestore)
 - **Combine**: Reaktif programlama
 
 ## 📋 Gereksinimler
 
-- iOS 15.0 veya üzeri
-- Xcode 14.0 veya üzeri
-- Swift 5.7 veya üzeri
+- iOS 17.0 veya üzeri
+- Xcode 16.0 veya üzeri
+- Swift 5.9 veya üzeri
+- Apple Developer hesabı (cihazda test için)
 
 ## 🏗 Kurulum
 
 1. Bu repository'yi klonlayın:
    ```bash
-   git clone https://github.com/[ORGANIZATION_NAME]/taskflow-ios.git
+   git clone https://github.com/Mobil-Uygulama-IOS/task-flow-3.git
    ```
 
 2. Xcode ile projeyi açın:
@@ -43,7 +44,14 @@ TaskFlow, iOS platformu için geliştirilmiş modern bir proje yönetim uygulama
    open "Task Flow Versiyon 2.xcodeproj"
    ```
 
-3. Projeyi çalıştırın (Cmd+R)
+3. **ÖNEMLİ:** Projeyi ilk açtığınızda, Xcode'da şu adımları izleyin:
+   - Project Navigator'da (sol panel) proje dosyasına tıklayın
+   - "Task Flow Versiyon 2" target'ını seçin
+   - "Signing & Capabilities" sekmesine gidin
+   - "Team" dropdown'dan kendi Apple Developer Team ID'nizi seçin
+   - Eğer Apple Developer hesabınız yoksa, "Add an Account..." seçeneğinden Apple ID'nizi ekleyin
+
+4. Projeyi çalıştırın (Cmd+R)
 
 ## 📁 Proje Yapısı
 
@@ -61,11 +69,13 @@ Task Flow Versiyon 2/
 ## 🔄 Geliştirme Durumu
 
 - ✅ Temel UI/UX tasarımı
-- ✅ Kullanıcı kimlik doğrulama (mock)
+- ✅ Firebase entegrasyonu (Auth & Firestore)
+- ✅ Kullanıcı kimlik doğrulama
 - ✅ Ana navigasyon yapısı
-- 🚧 Firebase entegrasyonu
-- 🚧 Proje yönetimi özellikleri
-- 🚧 Görev yönetimi özellikleri
+- ✅ Proje yönetimi özellikleri
+- ✅ Görev yönetimi özellikleri
+- ✅ Çoklu dil desteği (TR/EN)
+- 🚧 Proje analitiği
 - 🚧 Push notification'lar
 
 ## 🤝 Katkıda Bulunma

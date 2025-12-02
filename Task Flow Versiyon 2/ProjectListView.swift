@@ -9,9 +9,12 @@ struct ProjectListView: View {
     @State private var selectedFilterOption = LocalizationManager.shared.localizedString("FilterOptionAll")
     @State private var showAnalytics = false
     @State private var showProjectBoard = false
-    @State private var showProjectDetail = false
     @State private var selectedProject: Project?
     @State private var showCreateProject = false
+    
+    init() {
+        print("📋 ProjectListView initialized")
+    }
     
     var sortOptions: [String] {
         [localization.localizedString("SortOptionDate"), localization.localizedString("SortOptionName"), localization.localizedString("SortOptionProgress")]
@@ -60,47 +63,57 @@ struct ProjectListView: View {
     }
     
     var body: some View {
-        NavigationView {
+        let _ = print("📋 ProjectListView body - Projects count: \(projectManager.projects.count), Filtered: \(filteredProjects.count)")
+        
+        return NavigationView {
             ZStack {
-                // Dynamic background based on theme
-                themeManager.backgroundColor
-                    .ignoresSafeArea()
+                themeManager.backgroundColor.ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header with title and buttons (Android style)
+                    // Fixed Header - always at top
                     HStack {
                         Text(localization.localizedString("Projects"))
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(themeManager.textColor)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(themeManager.textColor)
                         
                         Spacer()
                         
                         HStack(spacing: 12) {
                             // Analytics button
                             Button(action: {
-                                selectedProject = projectManager.projects.first
-                                showAnalytics = true
+                                print("📊 Analytics butonu tıklandı")
+                                if !projectManager.projects.isEmpty {
+                                    selectedProject = projectManager.projects.first
+                                    showAnalytics = true
+                                    print("📊 showAnalytics = \(showAnalytics), selectedProject = \(selectedProject?.title ?? "nil")")
+                                }
                             }) {
                                 Image(systemName: "chart.bar.fill")
                                     .font(.system(size: 20))
                                     .foregroundColor(.white)
                                     .frame(width: 40, height: 40)
-                                    .background(Color.orange)
+                                    .background(projectManager.projects.isEmpty ? Color.orange.opacity(0.5) : Color.orange)
                                     .clipShape(Circle())
                             }
+                            .disabled(projectManager.projects.isEmpty)
                             
                             // Kanban Board button
                             Button(action: {
-                                showProjectBoard = true
+                                print("🎯 Board butonu tıklandı")
+                                if !projectManager.projects.isEmpty {
+                                    showProjectBoard = true
+                                    print("🎯 showProjectBoard = \(showProjectBoard)")
+                                }
                             }) {
                                 Image(systemName: "square.grid.2x2.fill")
                                     .font(.system(size: 20))
                                     .foregroundColor(.white)
                                     .frame(width: 40, height: 40)
-                                    .background(Color.green)
+                                    .background(projectManager.projects.isEmpty ? Color.green.opacity(0.5) : Color.green)
                                     .clipShape(Circle())
                             }
+                            .disabled(projectManager.projects.isEmpty)
                             
                             // Add new project button
                             Button(action: {
@@ -117,11 +130,16 @@ struct ProjectListView: View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                    .padding(.top, 50)
+                    .padding(.bottom, 16)
+                    .background(themeManager.backgroundColor)
                     
-                    // Search bar
-                    HStack {
-                        Image(systemName: "magnifyingglass")
+                    // Scrollable Content
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            // Search bar
+                            HStack {
+                                Image(systemName: "magnifyingglass")
                             .foregroundColor(themeManager.secondaryTextColor)
                         
                         TextField(localization.localizedString("SearchProjectsPlaceholder"), text: $searchText)
@@ -209,39 +227,86 @@ struct ProjectListView: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 24)
                         
-                        // Projects list
+                        // Projects list or empty state
                         ScrollView {
-                            LazyVStack(spacing: 12) {
-                                ForEach(filteredProjects) { project in
-                                    ProjectCardView(project: project)
-                                        .environmentObject(themeManager)
-                                        .onTapGesture {
-                                            selectedProject = project
-                                            showProjectDetail = true
+                            if filteredProjects.isEmpty {
+                                // Empty state
+                                VStack(spacing: 24) {
+                                    Spacer()
+                                        .frame(height: 60)
+                                    
+                                    Image(systemName: "folder.badge.plus")
+                                        .font(.system(size: 70))
+                                        .foregroundColor(themeManager.secondaryTextColor.opacity(0.5))
+                                    
+                                    VStack(spacing: 8) {
+                                        Text(searchText.isEmpty ? "Henüz Proje Yok" : "Proje Bulunamadı")
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(themeManager.textColor)
+                                        
+                                        Text(searchText.isEmpty ? "Yeni bir proje oluşturmak için + butonuna tıklayın" : "Arama kriterlerinize uygun proje bulunamadı")
+                                            .font(.subheadline)
+                                            .foregroundColor(themeManager.secondaryTextColor)
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal, 40)
+                                    }
+                                    
+                                    if searchText.isEmpty {
+                                        Button(action: {
+                                            showCreateProject = true
+                                        }) {
+                                            HStack {
+                                                Image(systemName: "plus.circle.fill")
+                                                Text("Yeni Proje Oluştur")
+                                                    .fontWeight(.semibold)
+                                            }
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 24)
+                                            .padding(.vertical, 14)
+                                            .background(Color.blue)
+                                            .cornerRadius(12)
                                         }
+                                        .padding(.top, 8)
+                                    }
+                                    
+                                    Spacer()
                                 }
+                                .frame(maxWidth: .infinity)
+                            } else {
+                                LazyVStack(spacing: 12) {
+                                    ForEach(filteredProjects) { project in
+                                        ProjectCardView(project: project)
+                                            .environmentObject(themeManager)
+                                            .onTapGesture {
+                                                print("🔍 Proje tıklandı: \(project.title)")
+                                                selectedProject = project
+                                            }
+                                    }
+                                }
+                                .padding(.horizontal, 20)
                             }
-                            .padding(.horizontal, 20)
                         }
                     }
                 }
             }
-        }
-        .navigationBarHidden(true)
-        .sheet(isPresented: $showProjectDetail) {
-            if let selectedProject = selectedProject,
-               let index = projectManager.projects.firstIndex(where: { $0.id == selectedProject.id }) {
-                ProjectDetailView(project: Binding(
-                    get: { projectManager.projects[index] },
-                    set: { updatedProject in
-                        Task {
-                            try? await projectManager.updateProject(updatedProject)
-                        }
-                    }
-                ))
-                .environmentObject(themeManager)
-                .environmentObject(projectManager)
+            .navigationBarHidden(true)
+            .edgesIgnoringSafeArea(.all)
             }
+        }
+        .sheet(item: $selectedProject) { project in
+            ProjectDetailView(project: Binding(
+                get: { 
+                    projectManager.projects.first(where: { $0.id == project.id }) ?? project 
+                },
+                set: { updatedProject in
+                    Task {
+                        try? await projectManager.updateProject(updatedProject)
+                    }
+                }
+            ))
+            .environmentObject(themeManager)
+            .environmentObject(projectManager)
         }
         .sheet(isPresented: $showAnalytics) {
             if let project = selectedProject {
@@ -252,18 +317,25 @@ struct ProjectListView: View {
         .sheet(isPresented: $showProjectBoard) {
             ProjectBoardView()
                 .environmentObject(themeManager)
+                .environmentObject(projectManager)
         }
-                                .sheet(isPresented: $showCreateProject) {
-                            CreateProjectView { newProject in
-                                // Yeni proje oluşturulduğunda otomatik olarak aç
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                    selectedProject = newProject
-                                    showProjectDetail = true
-                                }
-                            }
-                            .environmentObject(projectManager)
-                        }
-    }
+        .sheet(isPresented: $showCreateProject) {
+            CreateProjectView { newProject in
+                // Yeni proje oluşturulduğunda, Firestore listener güncellemesini bekle
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    // projects listesinde yeni projeyi bul
+                    if let foundProject = projectManager.projects.first(where: { $0.id == newProject.id }) {
+                        print("✅ Yeni proje listede bulundu, açılıyor: \(foundProject.title)")
+                        selectedProject = foundProject
+                    } else {
+                        print("⚠️ Yeni proje henüz listede yok: \(newProject.title)")
+                    }
+                }
+            }
+            .environmentObject(projectManager)
+        }
+    } // NavigationView sonu
+    } // body sonu
     
     private func addNewProject() {
         let titleFormat = LocalizationManager.shared.localizedString("NewProjectTitle")
@@ -363,5 +435,6 @@ struct ProjectListView_Previews: PreviewProvider {
             .preferredColorScheme(.dark)
     }
 }
+
 
 

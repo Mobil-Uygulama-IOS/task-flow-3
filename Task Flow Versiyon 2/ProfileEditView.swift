@@ -11,12 +11,20 @@ struct ProfileEditView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var showDeleteConfirmation = false
+    @FocusState private var focusedField: Field?
+    
+    enum Field {
+        case displayName, bio
+    }
     
     var body: some View {
         ZStack {
             // Dark background
             Color(red: 0.11, green: 0.13, blue: 0.16)
                 .ignoresSafeArea()
+                .onTapGesture {
+                    hideKeyboard()
+                }
             
             VStack(spacing: 0) {
                 // Header
@@ -47,7 +55,8 @@ struct ProfileEditView: View {
                     .disabled(isLoading)
                 }
                 .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 16)
                 
                 // Content
                 ScrollView {
@@ -90,6 +99,11 @@ struct ProfileEditView: View {
                                         RoundedRectangle(cornerRadius: 12)
                                             .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
                                     )
+                                    .focused($focusedField, equals: .displayName)
+                                    .submitLabel(.next)
+                                    .onSubmit {
+                                        focusedField = .bio
+                                    }
                             }
                             
                             // E-posta
@@ -231,6 +245,8 @@ struct ProfileEditView: View {
     }
     
     private func saveProfile() {
+        hideKeyboard()
+        
         guard !displayName.isEmpty else {
             alertMessage = "Lütfen ad soyad alanını doldurun."
             showAlert = true
@@ -277,6 +293,11 @@ struct ProfileEditView: View {
             authViewModel.signOut()
             presentationMode.wrappedValue.dismiss()
         }
+    }
+    
+    private func hideKeyboard() {
+        focusedField = nil
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 

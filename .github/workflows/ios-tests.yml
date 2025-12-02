@@ -22,9 +22,8 @@ jobs:
     
     - name: Install Dependencies
       run: |
-        cd "Task Flow Versiyon 2.xcodeproj"
-        xcodebuild -resolvePackageDependencies
-        cd ..
+        xcodebuild -resolvePackageDependencies \
+          -project "Task Flow Versiyon 2.xcodeproj"
     
     - name: Build App
       run: |

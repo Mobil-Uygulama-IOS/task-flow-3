@@ -118,7 +118,7 @@ struct AboutView: View {
                             VStack(spacing: 12) {
                                 Button(action: {
                                     // Open privacy policy
-                                    if let url = URL(string: "https://raptiye.app/privacy") {
+                                    if let url = URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/privacy-policy.html") {
                                         UIApplication.shared.open(url)
                                     }
                                 }) {
@@ -139,7 +139,7 @@ struct AboutView: View {
                                 
                                 Button(action: {
                                     // Open terms of service
-                                    if let url = URL(string: "https://raptiye.app/terms") {
+                                    if let url = URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/terms-of-service.html") {
                                         UIApplication.shared.open(url)
                                     }
                                 }) {

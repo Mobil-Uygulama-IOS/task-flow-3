@@ -1,4 +1,5 @@
 import SwiftUI
+import SafariServices
 
 struct ProfileEditView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -12,6 +13,8 @@ struct ProfileEditView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     @State private var showDeleteConfirmation = false
+    @State private var showPrivacyPolicy = false
+    @State private var showTermsOfService = false
     @FocusState private var focusedField: Field?
     
     enum Field {
@@ -145,16 +148,48 @@ struct ProfileEditView: View {
                                     .scrollContentBackground(.hidden)
 
                                 // Gizlilik Politikası, Hizmet Şartları ve Destek Maili Linkleri
-                                HStack(spacing: 16) {
-                                    Link("Gizlilik Politikası", destination: URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/privacy-policy.html")!)
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.blue)
-                                    Link("Hizmet Şartları", destination: URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/terms-of-service.html")!)
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.blue)
-                                    Link("Destek: raptiyedestek@gmail.com", destination: URL(string: "mailto:raptiyedestek@gmail.com")!)
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.blue)
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Button(action: {
+                                        showPrivacyPolicy = true
+                                    }) {
+                                        HStack {
+                                            Text("Gizlilik Politikası")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.blue)
+                                            Spacer()
+                                            Image(systemName: "arrow.up.right.square")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                    
+                                    Button(action: {
+                                        showTermsOfService = true
+                                    }) {
+                                        HStack {
+                                            Text("Hizmet Şartları")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.blue)
+                                            Spacer()
+                                            Image(systemName: "arrow.up.right.square")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
+                                    
+                                    Button(action: {
+                                        openMailApp()
+                                    }) {
+                                        HStack {
+                                            Text("Destek: raptiyedestek@gmail.com")
+                                                .font(.system(size: 14))
+                                                .foregroundColor(.blue)
+                                            Spacer()
+                                            Image(systemName: "envelope")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(.blue)
+                                        }
+                                    }
                                 }
                                 .padding(.top, 8)
                             }
@@ -247,6 +282,12 @@ struct ProfileEditView: View {
         } message: {
             Text("Hesabınızı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")
         }
+        .sheet(isPresented: $showPrivacyPolicy) {
+            SafariView(url: URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/privacy-policy.html")!)
+        }
+        .sheet(isPresented: $showTermsOfService) {
+            SafariView(url: URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/terms-of-service.html")!)
+        }
     }
     
     // MARK: - Functions
@@ -320,6 +361,30 @@ struct ProfileEditView: View {
     private func hideKeyboard() {
         focusedField = nil
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    
+    private func openMailApp() {
+        let email = "raptiyedestek@gmail.com"
+        let subject = "Destek Talebi"
+        let body = ""
+        
+        let coded = "mailto:\(email)?subject=\(subject)&body=\(body)".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        
+        if let emailURL = URL(string: coded ?? ""), UIApplication.shared.canOpenURL(emailURL) {
+            UIApplication.shared.open(emailURL)
+        }
+    }
+}
+
+// MARK: - SafariView
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        return SFSafariViewController(url: url)
+    }
+    
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {
     }
 }
 

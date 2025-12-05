@@ -97,7 +97,7 @@ struct HelpView: View {
                                 VStack(spacing: 12) {
                                     Button(action: {
                                         // Email support
-                                        if let url = URL(string: "mailto:support@raptiye.app") {
+                                        if let url = URL(string: "mailto:raptiyedestek@gmail.com?subject=Destek%20Talebi") {
                                             UIApplication.shared.open(url)
                                         }
                                     }) {

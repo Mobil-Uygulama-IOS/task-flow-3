@@ -160,3 +160,9 @@
 "TermsOfService" = "Hizmet Şartları";
 "AllRightsReserved" = "© 2025 Raptiye. Tüm hakları saklıdır.";
 "Version" = "Versiyon 1.0.0";
+
+// Empty States
+"NoProjectsYet" = "Henüz Proje Yok";
+"NoProjectsYetMessage" = "Yeni bir proje oluşturmak için + butonuna tıklayın";
+"ProjectNotFound" = "Proje Bulunamadı";
+"ProjectNotFoundMessage" = "Arama kriterlerinize uygun proje bulunamadı";

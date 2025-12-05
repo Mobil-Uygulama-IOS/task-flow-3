@@ -3,6 +3,7 @@ import SwiftUI
 struct CreateProjectView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var projectManager: ProjectManager
+    @EnvironmentObject var themeManager: ThemeManager
     @StateObject private var localization = LocalizationManager.shared
     var onProjectCreated: ((Project) -> Void)?
     var projectToEdit: Project?
@@ -27,8 +28,8 @@ struct CreateProjectView: View {
     
     var body: some View {
         ZStack {
-            // Dark background
-            Color(red: 0.11, green: 0.13, blue: 0.16)
+            // Background with theme
+            themeManager.backgroundColor
                 .ignoresSafeArea()
                 .onTapGesture {
                     hideKeyboard()
@@ -42,14 +43,14 @@ struct CreateProjectView: View {
                     }) {
                         Image(systemName: "xmark")
                             .font(.title3)
-                            .foregroundColor(.white)
+                            .foregroundColor(themeManager.textColor)
                     }
                     
                     Spacer()
                     
                     Text(isEditMode ? localization.localizedString("EditProject") : localization.localizedString("CreateNewProject"))
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(themeManager.textColor)
                     
                     Spacer()
                     
@@ -69,15 +70,15 @@ struct CreateProjectView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Proje Başlığı")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.gray)
+                                .foregroundColor(themeManager.secondaryTextColor)
                             
                             TextField("Örn: Web Sitesi Tasarımı", text: $projectTitle)
                                 .font(.system(size: 16))
-                                .foregroundColor(.white)
+                                .foregroundColor(themeManager.textColor)
                                 .padding(16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                        .fill(themeManager.cardBackground)
                                 )
                                 .focused($focusedField, equals: .title)
                                 .submitLabel(.next)
@@ -90,16 +91,16 @@ struct CreateProjectView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Proje Açıklaması")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.gray)
+                                .foregroundColor(themeManager.secondaryTextColor)
                             
                             TextEditor(text: $projectDescription)
                                 .font(.system(size: 16))
-                                .foregroundColor(.white)
+                                .foregroundColor(themeManager.textColor)
                                 .frame(minHeight: 100)
                                 .padding(12)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                        .fill(themeManager.cardBackground)
                                 )
                                 .scrollContentBackground(.hidden)
                         }
@@ -108,7 +109,7 @@ struct CreateProjectView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Teslim Tarihi")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.gray)
+                                .foregroundColor(themeManager.secondaryTextColor)
                             
                             Button(action: {
                                 hideKeyboard()
@@ -120,29 +121,29 @@ struct CreateProjectView: View {
                                     
                                     Text(formattedDate(dueDate))
                                         .font(.system(size: 16))
-                                        .foregroundColor(.white)
+                                        .foregroundColor(themeManager.textColor)
                                     
                                     Spacer()
                                     
                                     Image(systemName: "chevron.right")
                                         .font(.system(size: 12))
-                                        .foregroundColor(.gray)
+                                        .foregroundColor(themeManager.secondaryTextColor)
                                 }
                                 .padding(16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                        .fill(themeManager.cardBackground)
                                 )
                             }
                             
                             if showDatePicker {
                                 DatePicker("", selection: $dueDate, displayedComponents: .date)
                                     .datePickerStyle(.graphical)
-                                    .colorScheme(.dark)
+                                    .colorScheme(themeManager.isDarkMode ? .dark : .light)
                                     .padding()
                                     .background(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                            .fill(themeManager.cardBackground)
                                     )
                             }
                         }
@@ -151,7 +152,7 @@ struct CreateProjectView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Görevler")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.gray)
+                                .foregroundColor(themeManager.secondaryTextColor)
                             
                             // Task list
                             if !tasks.isEmpty {
@@ -164,7 +165,7 @@ struct CreateProjectView: View {
                                             
                                             Text(task)
                                                 .font(.system(size: 14))
-                                                .foregroundColor(.white)
+                                                .foregroundColor(themeManager.textColor)
                                             
                                             Spacer()
                                             
@@ -172,13 +173,13 @@ struct CreateProjectView: View {
                                                 tasks.remove(at: index)
                                             }) {
                                                 Image(systemName: "xmark.circle.fill")
-                                                    .foregroundColor(.gray)
+                                                    .foregroundColor(themeManager.secondaryTextColor)
                                             }
                                         }
                                         .padding(12)
                                         .background(
                                             RoundedRectangle(cornerRadius: 8)
-                                                .fill(Color(red: 0.2, green: 0.22, blue: 0.26))
+                                                .fill(themeManager.searchBackground)
                                         )
                                     }
                                 }
@@ -188,7 +189,7 @@ struct CreateProjectView: View {
                             HStack(spacing: 12) {
                                 TextField("Yeni görev ekle...", text: $taskTitle)
                                     .font(.system(size: 16))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeManager.textColor)
                                     .focused($focusedField, equals: .task)
                                     .submitLabel(.done)
                                     .onSubmit {
@@ -208,7 +209,7 @@ struct CreateProjectView: View {
                             .padding(16)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                    .fill(themeManager.cardBackground)
                             )
                         }
                         

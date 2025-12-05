@@ -3,6 +3,7 @@ import SwiftUI
 struct ProfileEditView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var themeManager: ThemeManager
     
     @State private var displayName: String = ""
     @State private var email: String = ""
@@ -19,8 +20,8 @@ struct ProfileEditView: View {
     
     var body: some View {
         ZStack {
-            // Dark background
-            Color(red: 0.11, green: 0.13, blue: 0.16)
+            // Background with theme
+            themeManager.backgroundColor
                 .ignoresSafeArea()
                 .onTapGesture {
                     hideKeyboard()
@@ -34,14 +35,14 @@ struct ProfileEditView: View {
                     }) {
                         Image(systemName: "xmark")
                             .font(.title3)
-                            .foregroundColor(.white)
+                            .foregroundColor(themeManager.textColor)
                     }
                     
                     Spacer()
                     
                     Text("Profil Bilgileri")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(themeManager.textColor)
                     
                     Spacer()
                     
@@ -50,7 +51,7 @@ struct ProfileEditView: View {
                     }) {
                         Text("Düzenle")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(isLoading ? .gray : .blue)
+                            .foregroundColor(isLoading ? themeManager.secondaryTextColor : .blue)
                     }
                     .disabled(isLoading)
                 }
@@ -75,11 +76,11 @@ struct ProfileEditView: View {
                             
                             Text(displayName.isEmpty ? "Test" : displayName)
                                 .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
+                                .foregroundColor(themeManager.textColor)
                             
                             Text(email)
                                 .font(.system(size: 15))
-                                .foregroundColor(.gray)
+                                .foregroundColor(themeManager.secondaryTextColor)
                         }
                         .padding(.top, 20)
                         
@@ -89,15 +90,15 @@ struct ProfileEditView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Ad Soyad")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(themeManager.secondaryTextColor)
                                 
                                 TextField("Ad Soyad", text: $displayName)
                                     .font(.system(size: 16))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeManager.textColor)
                                     .padding(16)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                            .fill(themeManager.cardBackground)
                                     )
                                     .focused($focusedField, equals: .displayName)
                                     .submitLabel(.next)
@@ -110,15 +111,15 @@ struct ProfileEditView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("E-posta")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(themeManager.secondaryTextColor)
                                 
                                 TextField("E-posta", text: $email)
                                     .font(.system(size: 16))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeManager.textColor)
                                     .padding(16)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                            .fill(themeManager.cardBackground)
                                     )
                                     .keyboardType(.emailAddress)
                                     .autocapitalization(.none)
@@ -130,18 +131,32 @@ struct ProfileEditView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Hakkımda")
                                     .font(.system(size: 14))
-                                    .foregroundColor(.gray)
+                                    .foregroundColor(themeManager.secondaryTextColor)
                                 
                                 TextEditor(text: $bio)
                                     .font(.system(size: 16))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(themeManager.textColor)
                                     .frame(minHeight: 100)
                                     .padding(12)
                                     .background(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                            .fill(themeManager.cardBackground)
                                     )
                                     .scrollContentBackground(.hidden)
+
+                                // Gizlilik Politikası, Hizmet Şartları ve Destek Maili Linkleri
+                                HStack(spacing: 16) {
+                                    Link("Gizlilik Politikası", destination: URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/privacy-policy.html")!)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.blue)
+                                    Link("Hizmet Şartları", destination: URL(string: "https://mobil-uygulama-ios.github.io/Raptiye-Ios/terms-of-service.html")!)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.blue)
+                                    Link("Destek: raptiyedestek@gmail.com", destination: URL(string: "mailto:raptiyedestek@gmail.com")!)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.blue)
+                                }
+                                .padding(.top, 8)
                             }
                         }
                         .padding(.horizontal, 20)
@@ -164,11 +179,11 @@ struct ProfileEditView: View {
                                     Image(systemName: "chevron.right")
                                         .font(.system(size: 14))
                                 }
-                                .foregroundColor(.white)
+                                .foregroundColor(themeManager.textColor)
                                 .padding(16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                        .fill(themeManager.cardBackground)
                                 )
                             }
                             
@@ -192,7 +207,7 @@ struct ProfileEditView: View {
                                 .padding(16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(red: 0.15, green: 0.17, blue: 0.21))
+                                        .fill(themeManager.cardBackground)
                                 )
                             }
                         }
@@ -286,12 +301,19 @@ struct ProfileEditView: View {
     private func deleteAccount() {
         isLoading = true
         
-        // Simulate account deletion
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            isLoading = false
-            // Here you would delete the account from Firebase
-            authViewModel.signOut()
-            presentationMode.wrappedValue.dismiss()
+        Task {
+            let success = await authViewModel.deleteAccount()
+            
+            await MainActor.run {
+                isLoading = false
+                
+                if success {
+                    presentationMode.wrappedValue.dismiss()
+                } else {
+                    alertMessage = "Hesap silme işlemi başarısız oldu. Lütfen tekrar giriş yapıp deneyin."
+                    showAlert = true
+                }
+            }
         }
     }
     

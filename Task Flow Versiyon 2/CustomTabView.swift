@@ -157,9 +157,9 @@ struct SettingsView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 55)
+                .padding(.top, ((UIApplication.shared.connectedScenes.compactMap { ($0 as? UIWindowScene)?.windows.first?.safeAreaInsets.top }.first) ?? 0) + 8)
                 .padding(.bottom, 16)
-                .background(themeManager.backgroundColor)
+                .background(themeManager.backgroundColor.ignoresSafeArea(.container, edges: .top))
                 
                 // Settings list
                 ScrollView {
@@ -369,6 +369,7 @@ struct SettingsView: View {
         .sheet(isPresented: $showProfileView) {
             ProfileEditView()
                 .environmentObject(authViewModel)
+                .environmentObject(themeManager)
         }
         .sheet(isPresented: $showNotificationsSettings) {
             NotificationSettingsView()

@@ -241,4 +241,42 @@ final class AuthViewModel: ObservableObject {
             }
         }
     }
+    
+    // MARK: - Delete Account (Firebase)
+    @MainActor
+    func deleteAccount() async -> Bool {
+        guard let currentUser = Auth.auth().currentUser else {
+            print("❌ Silinecek kullanıcı bulunamadı")
+            return false
+        }
+        
+        let userId = currentUser.uid
+        
+        do {
+            // 1. Kullanıcının Firestore'daki verilerini sil
+            let db = Firestore.firestore()
+            try await db.collection("users").document(userId).delete()
+            print("✅ Firestore kullanıcı verisi silindi: \(userId)")
+            
+            // 2. Firebase Authentication'dan kullanıcıyı sil
+            try await currentUser.delete()
+            print("✅ Firebase Auth kullanıcısı silindi: \(userId)")
+            
+            // 3. Local session'ı temizle
+            userSession = nil
+            
+            return true
+        } catch let error as NSError {
+            print("❌ Hesap silme hatası: \(error.localizedDescription)")
+            
+            // Eğer yeniden giriş gerekiyorsa (requires-recent-login hatası)
+            if error.code == AuthErrorCode.requiresRecentLogin.rawValue {
+                errorMessage = "Güvenlik nedeniyle hesabınızı silmek için yeniden giriş yapmanız gerekiyor."
+            } else {
+                errorMessage = "Hesap silme işlemi başarısız oldu: \(error.localizedDescription)"
+            }
+            
+            return false
+        }
+    }
 }

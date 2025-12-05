@@ -160,3 +160,9 @@
 "TermsOfService" = "Terms of Service";
 "AllRightsReserved" = "© 2025 Raptiye. All rights reserved.";
 "Version" = "Version 1.0.0";
+
+// Empty States
+"NoProjectsYet" = "No Projects Yet";
+"NoProjectsYetMessage" = "Tap the + button to create a new project";
+"ProjectNotFound" = "Project Not Found";
+"ProjectNotFoundMessage" = "No projects match your search criteria";
